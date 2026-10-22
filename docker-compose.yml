@@ -1,0 +1,79 @@
+# 星降る宝物殿 — 開発用 Docker Compose
+# 起動: docker compose up -d --build
+#   フロントエンド  http://localhost:3300
+#   API             http://localhost:8300/api/docs
+#   メール確認      http://localhost:8030 (Mailpit)
+#   オブジェクトストレージ http://localhost:9301 (MinIO コンソール)
+name: hoshifuru
+
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: gacha
+      POSTGRES_PASSWORD: gacha
+      POSTGRES_DB: gacha
+    ports: ["5470:5432"]
+    volumes: [dbdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gacha"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    ports: ["6390:6379"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 20
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: ["1030:1025", "8030:8025"]
+
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports: ["9300:9000", "9301:9001"]
+    volumes: [miniodata:/data]
+    profiles: ["storage"]
+
+  backend:
+    build: ./backend
+    env_file: [./backend/.env.docker]
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    ports: ["8300:8000"]
+    volumes: [uploads:/app/var/uploads]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        BACKEND_INTERNAL_URL: http://backend:8000
+    environment:
+      BACKEND_INTERNAL_URL: http://backend:8000
+    depends_on:
+      backend: { condition: service_healthy }
+    ports: ["3300:3000"]
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:3000/"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+volumes:
+  dbdata:
+  miniodata:
+  uploads:

@@ -1,0 +1,62 @@
+[
+  {
+    "at": "2026-10-17 13:54:42",
+    "height_ratio": 1.102,
+    "scores": {
+      "header": 7.7,
+      "hero": 17.2,
+      "banners": 21.8,
+      "features": 11.9,
+      "gacha": 24.0,
+      "prizes": 21.1,
+      "news": 9.6,
+      "footer": 5.0,
+      "overall": 16.2
+    }
+  },
+  {
+    "at": "2026-10-17 13:59:29",
+    "height_ratio": 1.039,
+    "scores": {
+      "header": 6.8,
+      "hero": 10.9,
+      "banners": 13.0,
+      "features": 10.0,
+      "gacha": 13.1,
+      "prizes": 13.7,
+      "news": 9.7,
+      "footer": 4.4,
+      "overall": 10.8
+    }
+  },
+  {
+    "at": "2026-10-17 14:03:47",
+    "height_ratio": 1.072,
+    "scores": {
+      "header": 6.8,
+      "hero": 11.5,
+      "banners": 14.0,
+      "features": 10.0,
+      "gacha": 14.7,
+      "prizes": 14.1,
+      "news": 9.9,
+      "footer": 4.6,
+      "overall": 11.4
+    }
+  },
+  {
+    "at": "2026-10-17 14:08:19",
+    "height_ratio": 1.047,
+    "scores": {
+      "header": 6.6,
+      "hero": 11.4,
+      "banners": 13.9,
+      "features": 9.9,
+      "gacha": 14.0,
+      "prizes": 14.0,
+      "news": 9.8,
+      "footer": 4.6,
+      "overall": 11.2
+    }
+  }
+]
