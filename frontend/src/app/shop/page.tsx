@@ -169,6 +169,7 @@ export default function ShopPage() {
                 </label>
               </div>
             )}
+            {me?.sms_required && <Alert kind="info">初めての交換のため、次の画面で電話番号の確認（SMS 認証）をお願いします。</Alert>}
             {err && <Alert kind="error">{err}</Alert>}
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setPick(null)} disabled={busy}>やめる</Button>

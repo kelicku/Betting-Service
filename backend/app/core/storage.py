@@ -36,9 +36,29 @@ def _normalize_image(data: bytes) -> tuple[bytes, str, str]:
     return out.getvalue(), "webp", "image/webp"
 
 
+MAX_VIDEO_BYTES = 30 * 1024 * 1024
+
+
+def is_mp4(data: bytes) -> bool:
+    """MP4（ISO base media）の先頭の「ftyp」ボックスで判定する。"""
+    return len(data) > 12 and data[4:8] == b"ftyp"
+
+
+def save_video(data: bytes, folder: str = "effects") -> str:
+    """演出動画（MP4）を保存する。変換はせず、そのまま保存する（H.264 推奨）。"""
+    if len(data) > MAX_VIDEO_BYTES:
+        raise AppError("file_too_large", "動画のサイズは30MB以下にしてください（10MB以下を推奨）。")
+    if not is_mp4(data):
+        raise AppError("invalid_video", "MP4 形式の動画を指定してください。")
+    return _store(data, f"{folder}/{uuid.uuid4().hex}.mp4", "video/mp4")
+
+
 def save_image(data: bytes, folder: str = "prizes") -> str:
     body, ext, content_type = _normalize_image(data)
-    key = f"{folder}/{uuid.uuid4().hex}.{ext}"
+    return _store(body, f"{folder}/{uuid.uuid4().hex}.{ext}", content_type)
+
+
+def _store(body: bytes, key: str, content_type: str) -> str:
     if settings.storage_backend == "s3":
         import boto3
 

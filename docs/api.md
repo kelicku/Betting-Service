@@ -217,6 +217,21 @@ GET  /api/admin/messages   配信履歴
 案件の種類 `video` は、1 日の視聴回数の上限（システム設定 `video_daily_limit`、既定 5 回、日本時間 0:00 にリセット、すべての動画案件の合計）で制御する。
 `GET /api/offers` の動画案件には `daily_used`・`daily_limit` が入る。上限に達すると開始時に `video_daily_limit`（409）、成果通知が届いても `daily_limit` として付与しない。
 
+### クーポンコード・当選ランク
+
+| メソッド | パス | 説明 |
+|---|---|---|
+| POST | `/api/coupons/redeem` | クーポンコードを入力してチケットを受け取る（`{code}`。大文字・小文字・全角を区別しない。メール確認済みのみ。1 人 10 分 10 回・IP ごと 1 時間 30 回まで） |
+| GET | `/api/ranks` | 当選ランクの表示名・演出動画・ロゴ（SSR=特賞・SR=大当たり・R=中当たり・N=小当たり） |
+| POST | `/api/admin/coupons` | 発行（`kind=single`：`count`・`prefix`／`kind=shared`：`code`・`max_uses`。`tickets`・`expires_at`・`note`） |
+| GET | `/api/admin/coupons` | 一覧（`kind`・`q`） |
+| POST | `/api/admin/coupons/{id}/active` | 停止・再開 |
+| GET / PUT | `/api/admin/ranks`・`/api/admin/ranks/{rarity}` | 当選ランクの設定（PUT は管理者のみ） |
+
+`POST /api/admin/uploads` は MP4 を受け付ける（`kind: "video"`、30MB まで、変換せず保存）。
+エラー：`coupon_invalid`・`coupon_expired`・`coupon_used_up`・`coupon_already_used`。
+SMS 認証が必須の設定では、`POST /api/shop/orders`・`POST /api/exchanges` が未確認の会員に `phone_not_verified`（403）を返す（ガチャ・チケット獲得には不要）。
+
 ### お問い合わせ
 
 | メソッド | パス | 説明 |

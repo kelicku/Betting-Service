@@ -13,9 +13,11 @@ import { motion } from "motion/react";
 import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { MagicCircleSVG } from "@/ceremony/Ceremony2D";
 import GachaCeremony from "@/ceremony/GachaCeremony";
+import RankVideo from "@/ceremony/RankVideo";
 import { Alert, Button, Panel } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
-import { refreshMe, useMe } from "@/lib/hooks";
+import { refreshMe, useMe, useRanks } from "@/lib/hooks";
+import { useMotionPref } from "@/lib/motion-pref";
 import { clearPending, markPendingDone, readPending } from "@/lib/pending";
 import type { Draw, GachaDetail } from "@/lib/types";
 
@@ -31,6 +33,15 @@ function PlayInner() {
   const search = useSearchParams();
   const router = useRouter();
   const { me } = useMe();
+  const { byRarity, loaded: ranksLoaded } = useRanks();
+  const { level } = useMotionPref();
+  const [videoDone, setVideoDone] = useState(false);
+  // 演出の設定の読み込みが遅いときは、3 秒で標準の演出に切り替える
+  const [ranksTimedOut, setRanksTimedOut] = useState(false);
+  useEffect(() => {
+    const t = setTimeout(() => setRanksTimedOut(true), 3000);
+    return () => clearTimeout(t);
+  }, []);
   const key = search.get("k") ?? "";
   const count = Number(search.get("n") ?? "1") as 1 | 10 | 100;
   const [state, setState] = useState<State>({ kind: "loading" });
@@ -105,8 +116,16 @@ function PlayInner() {
 
   if (state.kind === "ready") {
     const cost = state.draw.tickets_spent;
+    // 当選ランクの演出動画：ラストワン賞は特賞（SSR）、それ以外は出たランクの中でいちばん高いランク
+    const effectRarity = state.draw.has_last_one ? "SSR" : state.draw.best_rarity;
+    const effect = byRarity[effectRarity];
+    if (!ranksLoaded && !ranksTimedOut) return <div className="theme-night fixed inset-0 z-[70] bg-night-900" />;
+    if (effect?.video_url && !videoDone && level !== "off") {
+      return <RankVideo url={effect.video_url} logo={effect.logo_url} label={effect.label} onDone={() => setVideoDone(true)} />;
+    }
     return (
       <GachaCeremony
+        instant={videoDone}
         draw={state.draw}
         canAgain={me ? me.balance >= cost : false}
         onAgain={() => {

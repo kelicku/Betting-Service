@@ -47,10 +47,6 @@ export default function GachaDetailView({ initial }: { initial: GachaDetail }) {
       toast("ガチャを引くにはメールアドレスの確認が必要です。マイページから確認メールを再送できます。", "error");
       return;
     }
-    if (me.sms_required) {
-      router.push(`/verify-phone?next=${encodeURIComponent(`/gacha/${g.slug}`)}`);
-      return;
-    }
     setConfirm(n);
   };
 

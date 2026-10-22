@@ -286,15 +286,22 @@ def _code() -> str:
 
 
 async def test_sms_verification_flow_and_gating(client, make_client):
+    """SMS 認証は登録時ではなく、ポイント交換・景品の発送申請の前に必要（お客さまの方針）。ガチャ・チケット獲得には不要。"""
     from app.services import sms
 
     await set_setting(sms_verification_required=True)
     u = await create_user(balance=5)
+    await give_points(u.id, 1000)
     await login_as(client, u)
     g = await create_gacha()
     r = await client.post(f"/api/gachas/{g.id}/draw", json={"count": 1, "idempotency_key": key()})
-    assert r.status_code == 403 and r.json()["error"]["code"] == "phone_not_verified"
+    assert r.status_code == 200, r.text  # ガチャは SMS 認証なしで引ける
     assert (await client.get("/api/auth/me")).json()["sms_required"] is True
+    it = await shop_item(cost=500)
+    r = await client.post("/api/shop/orders", json={"item_id": it.id, "idempotency_key": key()})
+    assert r.status_code == 403 and r.json()["error"]["code"] == "phone_not_verified"
+    r = await client.post("/api/exchanges", json={"user_prize_ids": [1], "idempotency_key": key()})
+    assert r.status_code == 403 and r.json()["error"]["code"] == "phone_not_verified"
 
     assert (await client.post("/api/phone/send-code", json={"phone": "03-1234-5678"})).status_code == 400  # 固定電話は不可
     r = await client.post("/api/phone/send-code", json={"phone": "090-1234-5678"})
@@ -308,7 +315,8 @@ async def test_sms_verification_flow_and_gating(client, make_client):
     assert r.status_code == 200 and r.json()["last4"] == "5678"
     me = (await client.get("/api/auth/me")).json()
     assert me["phone_verified"] is True and me["sms_required"] is False
-    assert (await client.post(f"/api/gachas/{g.id}/draw", json={"count": 1, "idempotency_key": key()})).status_code == 200
+    r = await client.post("/api/shop/orders", json={"item_id": it.id, "idempotency_key": key()})
+    assert r.status_code == 200, r.text
 
     # 同じ番号は別のアカウントで使えない（番号はハッシュで照合）
     u2 = await create_user()

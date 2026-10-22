@@ -22,7 +22,7 @@ from app.api.admin.schemas import (
 from app.api.deps import DB, AdminUser, StaffUser
 from app.api.present import item_probabilities
 from app.core.errors import AppError, NotFound
-from app.core.storage import save_image
+from app.core.storage import is_mp4, save_image, save_video
 from app.models import (
     Banner,
     Conversion,
@@ -57,9 +57,12 @@ GACHA_FIELDS = ("id", "slug", "title", "subtitle", "description", "banner_image_
 
 
 @router.post("/uploads")
-async def upload(_: AdminUser, file: UploadFile = File(...), folder: Literal["prizes", "gachas", "offers"] = "prizes"):
+async def upload(_: AdminUser, file: UploadFile = File(...), folder: Literal["prizes", "gachas", "offers", "effects"] = "prizes"):
     data = await file.read()
-    return {"url": save_image(data, folder)}
+    if is_mp4(data):
+        # 演出動画（当選ランクごと）
+        return {"url": save_video(data, "effects"), "kind": "video"}
+    return {"url": save_image(data, folder), "kind": "image"}
 
 
 # ── 景品 ─────────────────────────────────────────────

@@ -23,10 +23,10 @@ export function fmtPercent(p: number): string {
 }
 
 export const RARITY: Record<Rarity, { label: string; color: string; glow: string; ring: string; text: string; order: number }> = {
-  N: { label: "ノーマル", color: "#C9CED9", glow: "rgba(220,226,240,0.55)", ring: "from-slate-200/70 via-slate-400/40 to-slate-200/70", text: "text-slate-200", order: 0 },
-  R: { label: "レア", color: "#84D8F1", glow: "rgba(132,216,241,0.7)", ring: "from-aurora via-sky-400/60 to-aurora", text: "text-aurora", order: 1 },
-  SR: { label: "スーパーレア", color: "#B48CFF", glow: "rgba(180,140,255,0.8)", ring: "from-amethyst-300 via-fuchsia-400/70 to-amethyst-300", text: "text-amethyst-200", order: 2 },
-  SSR: { label: "最高レア", color: "#F3DFB3", glow: "rgba(243,223,179,0.95)", ring: "from-gold-light via-gold to-gold-light", text: "text-gold-light", order: 3 },
+  N: { label: "小当たり", color: "#C9CED9", glow: "rgba(220,226,240,0.55)", ring: "from-slate-200/70 via-slate-400/40 to-slate-200/70", text: "text-slate-200", order: 0 },
+  R: { label: "中当たり", color: "#84D8F1", glow: "rgba(132,216,241,0.7)", ring: "from-aurora via-sky-400/60 to-aurora", text: "text-aurora", order: 1 },
+  SR: { label: "大当たり", color: "#B48CFF", glow: "rgba(180,140,255,0.8)", ring: "from-amethyst-300 via-fuchsia-400/70 to-amethyst-300", text: "text-amethyst-200", order: 2 },
+  SSR: { label: "特賞", color: "#F3DFB3", glow: "rgba(243,223,179,0.95)", ring: "from-gold-light via-gold to-gold-light", text: "text-gold-light", order: 3 },
 };
 
 export const RARITIES: Rarity[] = ["SSR", "SR", "R", "N"];

@@ -1886,6 +1886,316 @@
         }
       }
     },
+    "/api/coupons/redeem": {
+      "post": {
+        "tags": [
+          "クーポン"
+        ],
+        "summary": "Redeem",
+        "operationId": "redeem_api_coupons_redeem_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RedeemIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ranks": {
+      "get": {
+        "tags": [
+          "当選ランク"
+        ],
+        "summary": "当選ランクの表示名・演出動画・ロゴ",
+        "operationId": "ranks_api_ranks_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/ranks": {
+      "get": {
+        "tags": [
+          "管理"
+        ],
+        "summary": "Admin Ranks",
+        "operationId": "admin_ranks_api_admin_ranks_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/ranks/{rarity}": {
+      "put": {
+        "tags": [
+          "管理"
+        ],
+        "summary": "Admin Update Rank",
+        "operationId": "admin_update_rank_api_admin_ranks__rarity__put",
+        "parameters": [
+          {
+            "name": "rarity",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "enum": [
+                "SSR",
+                "SR",
+                "R",
+                "N"
+              ],
+              "type": "string",
+              "title": "Rarity"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RankIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/coupons": {
+      "post": {
+        "tags": [
+          "管理"
+        ],
+        "summary": "Create Coupons",
+        "operationId": "create_coupons_api_admin_coupons_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "管理"
+        ],
+        "summary": "List Coupons",
+        "operationId": "list_coupons_api_admin_coupons_get",
+        "parameters": [
+          {
+            "name": "kind",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "enum": [
+                    "single",
+                    "shared"
+                  ],
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Kind"
+            }
+          },
+          {
+            "name": "q",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "per_page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 1000,
+              "minimum": 1,
+              "default": 50,
+              "title": "Per Page"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/coupons/{coupon_id}/active": {
+      "post": {
+        "tags": [
+          "管理"
+        ],
+        "summary": "Set Coupon Active",
+        "operationId": "set_coupon_active_api_admin_coupons__coupon_id__active_post",
+        "parameters": [
+          {
+            "name": "coupon_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Coupon Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CouponActiveIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/banners": {
       "get": {
         "tags": [
@@ -3294,6 +3604,88 @@
         }
       }
     },
+    "/api/admin/users/{user_id}/resend-verification": {
+      "post": {
+        "tags": [
+          "管理"
+        ],
+        "summary": "Admin Resend Verification",
+        "description": "確認メールを再送する（会員から「メールが届かない」と問い合わせがあった場合）。",
+        "operationId": "admin_resend_verification_api_admin_users__user_id__resend_verification_post",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users/{user_id}/verify-email": {
+      "post": {
+        "tags": [
+          "管理"
+        ],
+        "summary": "Admin Verify Email",
+        "description": "メールアドレスを手動で確認済みにする（本人確認ができた場合のみ）。新規登録特典も通常どおり付与する。",
+        "operationId": "admin_verify_email_api_admin_users__user_id__verify_email_post",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/uploads": {
       "post": {
         "tags": [
@@ -3310,7 +3702,8 @@
               "enum": [
                 "prizes",
                 "gachas",
-                "offers"
+                "offers",
+                "effects"
               ],
               "type": "string",
               "default": "prizes",
@@ -5635,6 +6028,96 @@
         ],
         "title": "ContactStatusIn"
       },
+      "CouponActiveIn": {
+        "properties": {
+          "is_active": {
+            "type": "boolean",
+            "title": "Is Active"
+          }
+        },
+        "type": "object",
+        "required": [
+          "is_active"
+        ],
+        "title": "CouponActiveIn"
+      },
+      "CouponIn": {
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "single",
+              "shared"
+            ],
+            "title": "Kind"
+          },
+          "tickets": {
+            "type": "integer",
+            "maximum": 10000.0,
+            "minimum": 1.0,
+            "title": "Tickets"
+          },
+          "count": {
+            "type": "integer",
+            "maximum": 1000.0,
+            "minimum": 1.0,
+            "title": "Count",
+            "default": 1
+          },
+          "prefix": {
+            "type": "string",
+            "maxLength": 8,
+            "pattern": "^[A-Za-z0-9]*$",
+            "title": "Prefix",
+            "default": ""
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32,
+                "minLength": 4,
+                "pattern": "^[A-Za-z0-9\\-_]+$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "max_uses": {
+            "type": "integer",
+            "maximum": 1000000.0,
+            "minimum": 1.0,
+            "title": "Max Uses",
+            "default": 100
+          },
+          "expires_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expires At"
+          },
+          "note": {
+            "type": "string",
+            "maxLength": 100,
+            "title": "Note",
+            "default": ""
+          }
+        },
+        "type": "object",
+        "required": [
+          "kind",
+          "tickets"
+        ],
+        "title": "CouponIn"
+      },
       "DrawIn": {
         "properties": {
           "count": {
@@ -7730,6 +8213,60 @@
           "display_name"
         ],
         "title": "ProfileIn"
+      },
+      "RankIn": {
+        "properties": {
+          "label": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 1,
+            "title": "Label"
+          },
+          "video_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Video Url"
+          },
+          "logo_url": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 500
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Logo Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "label"
+        ],
+        "title": "RankIn"
+      },
+      "RedeemIn": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Code"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "title": "RedeemIn"
       },
       "RegisterIn": {
         "properties": {

@@ -16,7 +16,7 @@ from app.models.offer import (
     PostbackLog,
     SystemSetting,
 )
-from app.models.shop import GiftCode, ShopItem, ShopOrder
+from app.models.shop import Coupon, CouponRedemption, GiftCode, RankEffect, ShopItem, ShopOrder
 from app.models.ticket import PointTransaction, PointWallet, TicketTransaction, TicketWallet
 from app.models.user import AdminAuditLog, EmailToken, ShippingAddress, SmsCode, User, UserSession
 
@@ -47,7 +47,10 @@ __all__ = [
     "Prize",
     "ShippingAddress",
     "SystemSetting",
+    "Coupon",
+    "CouponRedemption",
     "GiftCode",
+    "RankEffect",
     "PointTransaction",
     "ShopItem",
     "ShopOrder",

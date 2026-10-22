@@ -29,6 +29,7 @@ class TicketKind(StrEnum):
     gacha_draw = "gacha_draw"
     refund = "refund"
     referral = "referral"  # 友達紹介
+    coupon = "coupon"  # クーポンコード
 
 
 class PointKind(StrEnum):

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import useSWR from "swr";
+import CouponBox from "@/components/CouponBox";
 import { RequireAuth } from "@/components/Guard";
 import { useToast } from "@/components/Toast";
 import { Alert, Button, Panel, PageTitle, Points, RarityBadge, Tickets } from "@/components/ui";
@@ -76,7 +77,7 @@ function Content({ me }: { me: Me }) {
       {me.sms_required && (
         <div className="mb-6">
           <Alert kind="warn">
-            ガチャ・チケット獲得・ポイント交換の前に、電話番号の確認（SMS 認証）が必要です。
+            初めてポイント交換・景品の発送申請をするときに、電話番号の確認（SMS 認証）が必要です。
             <Link href="/verify-phone" className="ml-2 font-bold underline underline-offset-2">電話番号を確認する</Link>
           </Alert>
         </div>
@@ -119,7 +120,10 @@ function Content({ me }: { me: Me }) {
             <span>交換済み {summary?.by_status.exchanged ?? 0}点</span>
           </div>
         </Panel>
-        <DailyBonus />
+        <div className="space-y-6">
+          <DailyBonus />
+          <CouponBox />
+        </div>
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">

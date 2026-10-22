@@ -68,10 +68,6 @@ function Content({ me }: { me: Me }) {
 
   const start = async (o: Offer) => {
     if (!me.email_verified) return toast("チケットを獲得するにはメールアドレスの確認が必要です。", "error");
-    if (me.sms_required) {
-      window.location.href = "/verify-phone?next=/earn";
-      return;
-    }
     try {
       const r = await api<{ url: string; click_id: string }>(`/offers/${o.id}/start`, { method: "POST" });
       setActive({ offer: o, url: r.url, clickId: r.click_id });
@@ -115,11 +111,6 @@ function Content({ me }: { me: Me }) {
       {!me.email_verified && (
         <div className="mb-6">
           <Alert kind="warn">チケットを獲得するには、メールアドレスの確認が必要です。</Alert>
-        </div>
-      )}
-      {me.email_verified && me.sms_required && (
-        <div className="mb-6">
-          <Alert kind="warn">チケットを獲得するには、電話番号の確認（SMS 認証）が必要です。<a href="/verify-phone?next=/earn" className="ml-2 font-bold underline">電話番号を確認する</a></Alert>
         </div>
       )}
       <Tabs

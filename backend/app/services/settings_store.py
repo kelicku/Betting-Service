@@ -15,7 +15,7 @@ DEFAULTS: dict[str, Any] = {
     "signup_bonus_points": 0,
     # 動画リワード広告：1 人 1 日あたりの視聴上限回数（日本時間 0:00 にリセット）
     "video_daily_limit": 5,
-    # SMS 認証：有効にすると、ガチャ・チケット獲得・交換の前に電話番号の確認が必要になる
+    # SMS 認証：有効にすると、ポイント交換・景品の発送申請の前に電話番号の確認が必要になる
     "sms_verification_required": False,
     # 友達紹介：紹介された人が登録を完了（メール認証＋SMS 認証が必須なら SMS 認証も）したときに付与するチケット
     "referral_inviter_tickets": 10,
@@ -38,7 +38,7 @@ DESCRIPTIONS: dict[str, str] = {
     "signup_bonus_tickets": "新規登録特典（メール認証完了時に付与）のチケット枚数",
     "signup_bonus_points": "新規登録特典（メール認証完了時に付与）のポイント数（0 なら付与しない）",
     "video_daily_limit": "動画リワード広告の 1 日あたりの視聴上限回数（日本時間 0:00 にリセット）",
-    "sms_verification_required": "SMS 認証を必須にする（有効時、ガチャ・チケット獲得・ポイント交換の前に電話番号の確認が必要）",
+    "sms_verification_required": "SMS 認証を必須にする（有効時、初めてのポイント交換・景品の発送申請の前に電話番号の確認が必要。友達紹介の特典も紹介された方の SMS 認証後に付与）",
     "referral_inviter_tickets": "友達紹介：紹介した人に付与するチケット枚数",
     "referral_invitee_tickets": "友達紹介：紹介された人に付与するチケット枚数",
     "daily_login_tickets": "毎日のログインボーナスのチケット枚数",

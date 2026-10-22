@@ -7,7 +7,7 @@ import { RequireAuth } from "@/components/Guard";
 import { PrizeCard } from "@/components/PrizeCard";
 import { Button, Empty, Modal, PageTitle, Pagination, RarityBadge, Spinner, Tabs, cx } from "@/components/ui";
 import { fetcher } from "@/lib/api";
-import { fmtDateTime } from "@/lib/format";
+import { RARITY, fmtDateTime } from "@/lib/format";
 import type { Page, Rarity, UserPrize } from "@/lib/types";
 
 const STATUS_LABEL: Record<UserPrize["status"], string> = { owned: "所持中", exchange_pending: "交換申請中", exchanged: "交換済み" };
@@ -66,7 +66,7 @@ function Content() {
         <select className="field mb-5 w-auto py-2 text-sm" value={rarity} onChange={(e) => (setRarity(e.target.value as Rarity), setPage(1))} aria-label="レアリティで絞り込み">
           <option value="">すべてのレアリティ</option>
           {["SSR", "SR", "R", "N"].map((r) => (
-            <option key={r} value={r}>{r}</option>
+            <option key={r} value={r}>{RARITY[r as keyof typeof RARITY].label}</option>
           ))}
         </select>
       </div>

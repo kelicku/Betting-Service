@@ -11,7 +11,7 @@ export interface Me {
   /** ポイントの残高（ガチャで当たり、景品・ギフトとの交換に使う） */
   point_balance: number;
   phone_verified: boolean;
-  /** SMS 認証が必須で、まだ済んでいない */
+  /** SMS 認証が必須で、まだ済んでいない（ポイント交換・景品の発送申請の前に必要） */
   sms_required: boolean;
   invite_code: string | null;
   unread_notifications: number;

@@ -93,7 +93,7 @@ docker-compose.yml
 ## テスト
 
 ```bash
-cd backend && .venv/bin/pytest            # 105 件（同時アクセス・二重消費・ラストワン賞・署名検証・ポイント交換・SMS・友達紹介を含む）
+cd backend && .venv/bin/pytest            # 111 件（同時アクセス・二重消費・ラストワン賞・署名検証・ポイント交換・SMS・友達紹介を含む）
 cd frontend && npm test                    # 単体テスト
 cd frontend && npx playwright test         # E2E（起動中の環境に対して実行）
 ```

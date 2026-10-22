@@ -167,13 +167,13 @@ SHOWCASE_PRIZES = {
 POINT_PRIZES = {100: "N", 500: "R", 1000: "SR", 10000: "SSR"}
 
 SHOWCASE_GACHAS = [
-    # slug, title, badge, チケット枚数/回, image, items[(prize_key, stock)], last_one_key, subtitle
+    # slug, title, badge, チケット枚数/回（お客さまの方針：1 回 1 枚）, image, items[(prize_key, stock)], last_one_key, subtitle
     # prize_key：景品キー、または "pt:100" のようなポイント景品
-    ("premium", "プレミアムガチャ", "豪華景品が当たる！", 3, "/images/waku/gacha-premium.webp",
+    ("premium", "プレミアムガチャ", "豪華景品が当たる！", 1, "/images/waku/gacha-premium.webp",
      [("console", 2), ("phone", 2), ("amazon", 16), ("pt:10000", 10), ("pt:1000", 120), ("pt:500", 350), ("pt:100", 500)], "console", "ゲーム好き必見！"),
-    ("digital-gift", "デジタルギフトガチャ", "人気No.1", 2, "/images/waku/gacha-digital.webp",
+    ("digital-gift", "デジタルギフトガチャ", "人気No.1", 1, "/images/waku/gacha-digital.webp",
      [("amazon", 10), ("apple", 10), ("googleplay", 10), ("digico", 20), ("pt:1000", 50), ("pt:500", 150), ("pt:100", 250)], "pt:10000", "人気のデジタルギフトが当たる"),
-    ("special", "スペシャルガチャ", "ラストワン賞あり！", 5, "/images/waku/gacha-special.webp",
+    ("special", "スペシャルガチャ", "ラストワン賞あり！", 1, "/images/waku/gacha-special.webp",
      [("phone", 1), ("amazon", 9), ("digico", 20), ("pt:10000", 5), ("pt:1000", 45), ("pt:500", 120)], "svg:lastone_orb", "最後の1口には特別な景品"),
 ]
 # 旧デザイン（星降る宝物殿）のデモ用ガチャ。新デザインでは公開を終了する

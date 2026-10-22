@@ -67,6 +67,10 @@ function Content() {
       toast("景品交換の申請を受け付けました。");
       router.replace(`/exchanges/${res.id}`);
     } catch (e) {
+      if ((e as ApiError).code === "phone_not_verified") {
+        window.location.href = "/verify-phone?next=/exchanges/new";
+        return;
+      }
       setError((e as ApiError).message);
       setStep("form");
     } finally {

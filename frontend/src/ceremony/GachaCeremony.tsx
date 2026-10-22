@@ -23,14 +23,18 @@ export default function GachaCeremony({
   onResults,
   onExit,
   canAgain,
+  instant = false,
 }: {
   draw: Draw;
   onAgain: () => void;
   onResults: () => void;
   onExit: () => void;
   canAgain: boolean;
+  /** 演出動画を流したあとなど、標準の演出を省いてすぐ結果を表示する */
+  instant?: boolean;
 }) {
-  const { level } = useMotionPref();
+  const { level: prefLevel } = useMotionPref();
+  const level = instant ? "off" : prefLevel;
   const lastOne = useMemo(() => draw.results.find((r) => r.is_last_one) ?? null, [draw]);
   const normal = useMemo(() => draw.results.filter((r) => !r.is_last_one), [draw]);
   const [stage, setStage] = useState<Stage>(level === "off" ? (lastOne ? "lastone-reveal" : "final") : "summon");

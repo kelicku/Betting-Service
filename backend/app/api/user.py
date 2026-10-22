@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, Query, Request, Response
 from sqlalchemy import func, select, update
 from sqlalchemy.orm import selectinload
 
-from app.api.deps import DB, CurrentUser, OptionalUser, VerifiedUser, not_in_maintenance, rate_limit
+from app.api.deps import DB, CurrentUser, OptionalUser, PhoneVerifiedUser, VerifiedUser, not_in_maintenance, rate_limit
 from app.api.present import (
     awarded_gacha_ids,
     draw_out,
@@ -285,7 +285,7 @@ async def saved_address(user: CurrentUser, db: DB):
 
 @router.post("/exchanges", response_model=ExchangeOut, status_code=201, tags=["景品交換"],
              dependencies=[Maint, rate_limit("exchange", 10, 60, "user")])
-async def create_exchange(body: ExchangeIn, user: CurrentUser, db: DB):
+async def create_exchange(body: ExchangeIn, user: PhoneVerifiedUser, db: DB):
     req, _ = await exchange_svc.create_request(
         db, user, body.user_prize_ids, body.shipping.model_dump() if body.shipping else None,
         body.idempotency_key, body.save_address, body.message,

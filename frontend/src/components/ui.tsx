@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRanks } from "@/lib/hooks";
 import { AnimatePresence, motion } from "motion/react";
 import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
 import { RARITY } from "@/lib/format";
@@ -197,11 +198,13 @@ export function Tickets({ n, className }: { n: number; className?: string }) {
 
 export function RarityBadge({ rarity, size = "sm" }: { rarity: Rarity; size?: "sm" | "md" }) {
   const meta = RARITY[rarity];
+  // 表示名は管理画面の「当選ランク」の設定（特賞・大当たり・中当たり・小当たり）
+  const label = useRanks().byRarity[rarity]?.label ?? meta.label;
   return (
     <span
       className={cx(
         "inline-flex items-center justify-center rounded-md font-display font-bold tracking-widest",
-        size === "sm" ? "h-5 min-w-[2.2rem] px-1.5 text-[10px]" : "h-7 min-w-[3rem] px-2 text-xs",
+        size === "sm" ? "h-5 min-w-[2.2rem] whitespace-nowrap px-1.5 text-[10px]" : "h-7 min-w-[3rem] whitespace-nowrap px-2 text-xs",
       )}
       style={{
         color: rarity === "N" ? "#1b2033" : "#120d2b",
@@ -216,7 +219,7 @@ export function RarityBadge({ rarity, size = "sm" }: { rarity: Rarity; size?: "s
         boxShadow: `0 0 12px ${meta.glow}`,
       }}
     >
-      {rarity}
+      {label}
     </span>
   );
 }

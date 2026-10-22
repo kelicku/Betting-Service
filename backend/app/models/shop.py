@@ -85,3 +85,57 @@ class ShopOrder(Base, TimestampMixin):
         CheckConstraint("status in ('pending','fulfilled','shipped','cancelled')", name="order_status_valid"),
         Index("uq_shop_orders_user_idem", "user_id", "idempotency_key", unique=True),
     )
+
+
+class Coupon(Base, TimestampMixin):
+    """クーポンコード（チケットを配布する）。
+
+    - single：使い捨て型。1 回使われたら無効（SNS の DM で個別に配る用）
+    - shared：先着型。全員共通のあいことばで、上限回数（max_uses）に達したら無効。1 人 1 回まで
+    """
+
+    __tablename__ = "coupons"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    code: Mapped[str] = mapped_column(String(32), unique=True)  # 大文字で保存し、大文字・小文字を区別せず照合
+    kind: Mapped[str] = mapped_column(String(8))
+    tickets: Mapped[int] = mapped_column(Integer)
+    max_uses: Mapped[int] = mapped_column(Integer)  # single は 1
+    uses: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    is_active: Mapped[bool] = mapped_column(Boolean, default=True, server_default="true")
+    note: Mapped[str] = mapped_column(String(100), default="", server_default="")  # 管理用のメモ（配布先など）
+    batch_id: Mapped[str | None] = mapped_column(String(32), index=True)  # まとめて発行したときの識別子
+    created_by: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"))
+
+    __table_args__ = (
+        CheckConstraint("kind in ('single','shared')", name="coupon_kind_valid"),
+        CheckConstraint("tickets > 0", name="coupon_tickets_positive"),
+        CheckConstraint("max_uses > 0", name="coupon_max_uses_positive"),
+        CheckConstraint("uses >= 0 and uses <= max_uses", name="coupon_uses_within_max"),
+    )
+
+
+class CouponRedemption(Base):
+    __tablename__ = "coupon_redemptions"
+
+    id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
+    coupon_id: Mapped[int] = mapped_column(ForeignKey("coupons.id", ondelete="CASCADE"), index=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    __table_args__ = (Index("uq_coupon_redemptions_coupon_user", "coupon_id", "user_id", unique=True),)
+
+
+class RankEffect(Base):
+    """当選ランクごとの表示名・演出動画・ロゴ（管理画面で設定）。rarity は内部のランク（SSR/SR/R/N）。"""
+
+    __tablename__ = "rank_effects"
+
+    rarity: Mapped[str] = mapped_column(String(8), primary_key=True)
+    label: Mapped[str] = mapped_column(String(20))
+    video_url: Mapped[str | None] = mapped_column(String(500))
+    logo_url: Mapped[str | None] = mapped_column(String(500))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now())
+
+    __table_args__ = (CheckConstraint("rarity in ('N','R','SR','SSR')", name="rank_effect_rarity_valid"),)

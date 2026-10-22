@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlalchemy import text
 from starlette.middleware.base import BaseHTTPMiddleware
 
-from app.api import auth, points_shop, postbacks, showcase, user
+from app.api import auth, coupons_ranks, points_shop, postbacks, showcase, user
 from app.api.admin import catalog as admin_catalog
 from app.api.admin import shop as admin_shop
 from app.api.admin import users as admin_users
@@ -131,6 +131,7 @@ api = APIRouter(prefix="/api")
 api.include_router(auth.router)
 api.include_router(user.router)
 api.include_router(points_shop.router)
+api.include_router(coupons_ranks.router)
 api.include_router(showcase.router)
 api.include_router(postbacks.router)
 admin = APIRouter(prefix="/admin", tags=["管理"])

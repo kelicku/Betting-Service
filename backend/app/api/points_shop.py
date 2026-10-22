@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel, Field
 from sqlalchemy import func, select
 
-from app.api.deps import DB, CurrentUser, OptionalUser, VerifiedUser, not_in_maintenance, rate_limit
+from app.api.deps import DB, CurrentUser, OptionalUser, PhoneVerifiedUser, not_in_maintenance, rate_limit, verified_user
 from app.models import PointTransaction, PointWallet
 from app.schemas import Page, ShippingIn, TicketTxOut, WalletOut
 from app.services import points, referrals, shop
@@ -56,8 +56,8 @@ class ShopOrderIn(BaseModel):
     save_address: bool = False
 
 
-@router.post("/shop/orders", tags=["ポイント交換"], dependencies=[Maint, rate_limit("shop", 20, 60, "user")])
-async def create_shop_order(body: ShopOrderIn, user: VerifiedUser, db: DB):
+@router.post("/shop/orders", tags=["ポイント交換"], dependencies=[Maint, Depends(verified_user), rate_limit("shop", 20, 60, "user")])
+async def create_shop_order(body: ShopOrderIn, user: PhoneVerifiedUser, db: DB):
     order = await shop.place_order(
         db, user, body.item_id, body.idempotency_key, body.shipping.model_dump() if body.shipping else None, body.save_address
     )

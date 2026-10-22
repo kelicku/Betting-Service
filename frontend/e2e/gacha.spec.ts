@@ -1,9 +1,9 @@
 import { expect, test } from "@playwright/test";
 
 // demo アカウントのセッションは auth.setup.ts で作成済み（演出は「最小限」）
-// 参考デザインの表示データ（python -m app.cli showcase）の「デジタルギフトガチャ」（1回 チケット2枚）で確認する
+// 参考デザインの表示データ（python -m app.cli showcase）の「デジタルギフトガチャ」（1回 チケット1枚）で確認する
 const GACHA = "/gacha/digital-gift";
-const COST = 2;
+const COST = 1;
 const balanceOf = async (page: import("@playwright/test").Page, label = /所持チケット/) =>
   Number((await page.getByLabel(label).locator("visible=true").first().getAttribute("aria-label"))?.match(/[\d,]+/)?.[0].replace(/,/g, ""));
 
