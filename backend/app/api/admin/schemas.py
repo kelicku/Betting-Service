@@ -10,6 +10,13 @@ class TicketAdjustIn(BaseModel):
     idempotency_key: str = Field(min_length=8, max_length=64)
 
 
+class PointAdjustIn(BaseModel):
+    # ポイントは景品の価格（例：40 万 pt）に合わせて大きな単位で扱うため、チケットより上限を大きくする
+    delta: int = Field(ge=-10_000_000, le=10_000_000)
+    reason: str = Field(min_length=2, max_length=150)
+    idempotency_key: str = Field(min_length=8, max_length=64)
+
+
 class SuspendIn(BaseModel):
     reason: str = Field(min_length=2, max_length=500)
 

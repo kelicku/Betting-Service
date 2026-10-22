@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRanks } from "@/lib/hooks";
 import { AnimatePresence, motion } from "motion/react";
-import { forwardRef, useCallback, useEffect, useRef, useState } from "react";
+import { forwardRef, useCallback, useEffect, useRef, useState, useId } from "react";
 import { RARITY } from "@/lib/format";
 import type { Rarity } from "@/lib/types";
 
@@ -153,17 +153,19 @@ export function Ornament({ className }: { className?: string }) {
 }
 
 export function TicketIcon({ className = "h-4 w-4" }: { className?: string }) {
+  // 各アイコンに固有の ID（同じ ID を共有すると、非表示の要素内の定義が参照されて色が消える）
+  const gid = `tkg${useId().replace(/:/g, "")}`;
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden>
       <defs>
-        <linearGradient id="tkg" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={gid} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#ffb3cf" />
           <stop offset="1" stopColor="#ff4f8f" />
         </linearGradient>
       </defs>
       <path
         d="M3 7a2 2 0 012-2h14a2 2 0 012 2v2a2 2 0 000 4v2a2 2 0 01-2 2H5a2 2 0 01-2-2v-2a2 2 0 000-4V7z"
-        fill="url(#tkg)"
+        fill={`url(#${gid})`}
         stroke="#e8336f"
         strokeWidth=".6"
       />

@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { api } from "@/lib/api";
 import { refreshMe, useMe } from "@/lib/hooks";
 import { TicketIcon, cx } from "./ui";
@@ -35,9 +35,9 @@ export function Logo({ large }: { large?: boolean }) {
       <Image
         width={56} height={72} src="/images/waku/logo-coin.webp"
         alt=""
-        className={cx("shrink-0 object-contain transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110", large ? "h-12 w-12 sm:h-16 sm:w-16" : "h-8 w-8 sm:h-[3.6rem] sm:w-[3.6rem]")}
+        className={cx("shrink-0 object-contain transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110", large ? "h-12 w-12 sm:h-16 sm:w-16" : "h-7 w-7 min-[380px]:h-8 min-[380px]:w-8 sm:h-[3.6rem] sm:w-[3.6rem]")}
       />
-      <OutlineText stroke={large ? 9 : 7} className={cx("logo-text font-round font-black tracking-[-0.02em]", large ? "text-[2rem] sm:text-[2.6rem]" : "text-[1.1rem] min-[400px]:text-[1.4rem] sm:text-[2rem] min-[1400px]:text-[2.45rem]")}>
+      <OutlineText stroke={large ? 9 : 7} className={cx("logo-text font-round font-black tracking-[-0.02em]", large ? "text-[2rem] sm:text-[2.6rem]" : "text-[1rem] min-[380px]:text-[1.15rem] min-[400px]:text-[1.4rem] sm:text-[2rem] min-[1400px]:text-[2.45rem]")}>
         わくわくガチャ
       </OutlineText>
     </Link>
@@ -45,16 +45,18 @@ export function Logo({ large }: { large?: boolean }) {
 }
 
 function CoinIcon({ className }: { className?: string }) {
+  // 各アイコンに固有の ID（非表示の要素内の定義を参照すると色が消えるため）
+  const gid = `coin${useId().replace(/:/g, "")}`;
   return (
     <svg viewBox="0 0 32 32" className={className} aria-hidden>
       <defs>
-        <radialGradient id="coin-g" cx="35%" cy="30%" r="75%">
+        <radialGradient id={gid} cx="35%" cy="30%" r="75%">
           <stop offset="0" stopColor="#fff3b0" />
           <stop offset=".45" stopColor="#ffc928" />
           <stop offset="1" stopColor="#e08a00" />
         </radialGradient>
       </defs>
-      <circle cx="16" cy="16" r="15" fill="url(#coin-g)" stroke="#d07a00" strokeWidth="1.2" />
+      <circle cx="16" cy="16" r="15" fill={`url(#${gid})`} stroke="#d07a00" strokeWidth="1.2" />
       <circle cx="16" cy="16" r="11.2" fill="none" stroke="#fff6c8" strokeOpacity=".8" strokeWidth="1" />
       <path d="M12.3 9.5h4.6a4.1 4.1 0 010 8.2h-2.2v4.8h-2.4zm2.4 2.2v3.8h2.1a1.9 1.9 0 000-3.8z" fill="#fff" />
     </svg>
@@ -95,18 +97,25 @@ function TicketPill({ balance }: { balance: number }) {
   );
 }
 
+/** 狭い画面用の短い表記：1 万以上は「4.5万」「12.3万」「123万」（正確な数は aria-label で読み上げる）。 */
+function shortJa(n: number): string {
+  if (n < 10_000) return n.toLocaleString("ja-JP");
+  const man = n / 10_000;
+  return `${man >= 1000 ? Math.floor(man).toLocaleString("ja-JP") : man >= 100 ? Math.floor(man) : Math.floor(man * 10) / 10}万`;
+}
+
 /** スマートフォン用：チケットとポイントを 1 つの小さな枠にまとめて表示する。 */
 function BalancePillCompact({ tickets, points }: { tickets: number; points: number }) {
   return (
     <span className="flex h-10 items-center overflow-hidden rounded-full border-2 border-[#f6c445] bg-white text-[#1e1f3a] shadow-[0_4px_14px_-6px_rgba(240,170,30,0.6)] sm:h-11 lg:hidden">
-      <Link href="/tickets" className="flex items-center gap-0.5 pl-1.5 pr-2" aria-label={`所持チケット ${tickets.toLocaleString("ja-JP")}枚`}>
+      <Link href="/tickets" className="flex items-center gap-0.5 pl-1 pr-1.5 min-[380px]:pl-1.5 min-[380px]:pr-2" aria-label={`所持チケット ${tickets.toLocaleString("ja-JP")}枚`}>
         <TicketIcon className="h-5 w-5" />
-        <span className="font-round text-sm font-extrabold tabular-nums">{tickets.toLocaleString("ja-JP")}</span>
+        <span className="font-round text-sm font-extrabold tabular-nums">{shortJa(tickets)}</span>
       </Link>
       <span className="h-5 w-px bg-[#f6c445]" aria-hidden />
-      <Link href="/points" className="flex items-center gap-0.5 pl-1.5 pr-2.5" aria-label={`所持ポイント ${points.toLocaleString("ja-JP")}pt`}>
+      <Link href="/points" className="flex items-center gap-0.5 pl-1 pr-2 min-[380px]:pl-1.5 min-[380px]:pr-2.5" aria-label={`所持ポイント ${points.toLocaleString("ja-JP")}pt`}>
         <CoinIcon className="h-5 w-5" />
-        <span className="font-round text-sm font-extrabold tabular-nums">{points.toLocaleString("ja-JP")}</span>
+        <span className="font-round text-sm font-extrabold tabular-nums">{shortJa(points)}</span>
       </Link>
     </span>
   );

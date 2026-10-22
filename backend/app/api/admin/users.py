@@ -11,6 +11,7 @@ from app.api.admin.schemas import (
     AnnouncementIn,
     ContactStatusIn,
     MessageIn,
+    PointAdjustIn,
     RoleIn,
     SuspendIn,
     TicketAdjustIn,
@@ -254,7 +255,7 @@ async def adjust_tickets(user_id: int, body: TicketAdjustIn, admin: AdminUser, r
 
 
 @router.post("/users/{user_id}/points")
-async def adjust_points(user_id: int, body: TicketAdjustIn, admin: AdminUser, request: Request, db: DB):
+async def adjust_points(user_id: int, body: PointAdjustIn, admin: AdminUser, request: Request, db: DB):
     """ポイント（交換用の残高）の付与・減算。チケットとは別。"""
     u = await _user(db, user_id)
     kind = PointKind.admin_grant if body.delta > 0 else PointKind.admin_adjust
