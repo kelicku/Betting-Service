@@ -22,7 +22,7 @@ class SentMail:
 outbox: list[SentMail] = []
 
 
-async def send_mail(to: str, subject: str, body: str) -> None:
+async def send_mail(to: str, subject: str, body: str, *, raise_errors: bool = False) -> None:
     if settings.mail_backend == "memory":
         outbox.append(SentMail(to, subject, body))
         return
@@ -45,6 +45,8 @@ async def send_mail(to: str, subject: str, body: str) -> None:
             timeout=10,
         )
     except Exception:
+        if raise_errors:
+            raise
         # メール送信失敗で業務処理を止めない（エラー監視に記録）
         log.exception("failed to send mail to %s", to)
 

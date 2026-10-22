@@ -173,34 +173,51 @@ async def resend_verification(db: AsyncSession, user: User) -> None:
 
 
 async def verify_email(db: AsyncSession, token: str) -> User:
+    # 確認済みのリンクをもう一度開いた場合（2 回クリックした・別の端末で開いた等）は、エラーではなく「確認済み」と案内する。
+    # 使用済みのリンクではログインさせない（メールに残ったリンクからの不正なログインを防ぐ）
+    used = await db.scalar(
+        select(EmailToken).where(EmailToken.token_hash == sha256_hex(token), EmailToken.purpose == TokenPurpose.verify_email)
+    )
+    if used is not None and used.used_at is not None:
+        owner = await db.get(User, used.user_id)
+        if owner is not None and owner.email_verified_at is not None:
+            raise AppError("already_verified", "このメールアドレスは確認済みです。ログインしてご利用ください。", 409)
     user = await consume_token(db, token, TokenPurpose.verify_email)
-    if user.email_verified_at is None:
-        user.email_verified_at = now()
-        bonus = await settings_store.get(db, "signup_bonus_tickets")
-        if bonus > 0:
-            # dedupe_key により新規登録特典は 1 ユーザー 1 回のみ
-            await tickets.credit(
-                db, user.id, bonus, TicketKind.signup_bonus, "新規登録特典",
-                dedupe_key=f"signup:{user.id}",
-            )
-            db.add(
-                Notification(
-                    user_id=user.id,
-                    kind="welcome",
-                    title="わくわくガチャへようこそ",
-                    body=f"新規登録特典としてチケット{bonus}枚をお贈りしました。",
-                    link="/gacha",
-                )
-            )
-        bonus_pt = await settings_store.get(db, "signup_bonus_points")
-        if bonus_pt > 0:
-            await points.credit(
-                db, user.id, bonus_pt, PointKind.signup_bonus, "新規登録特典", dedupe_key=f"signup-pt:{user.id}",
-            )
-        from app.services import referrals
-
-        await referrals.maybe_reward(db, user)
+    await complete_email_verification(db, user)
     return user
+
+
+async def complete_email_verification(db: AsyncSession, user: User) -> bool:
+    """メールアドレスを確認済みにし、新規登録特典・友達紹介の特典を付与する（1 回だけ）。
+    確認メールのリンクからと、管理画面の「確認済みにする」から呼ばれる。呼び出し側で commit する。"""
+    if user.email_verified_at is not None:
+        return False
+    user.email_verified_at = now()
+    bonus = await settings_store.get(db, "signup_bonus_tickets")
+    if bonus > 0:
+        # dedupe_key により新規登録特典は 1 ユーザー 1 回のみ
+        await tickets.credit(
+            db, user.id, bonus, TicketKind.signup_bonus, "新規登録特典",
+            dedupe_key=f"signup:{user.id}",
+        )
+        db.add(
+            Notification(
+                user_id=user.id,
+                kind="welcome",
+                title="わくわくガチャへようこそ",
+                body=f"新規登録特典としてチケット{bonus}枚をお贈りしました。",
+                link="/gacha",
+            )
+        )
+    bonus_pt = await settings_store.get(db, "signup_bonus_points")
+    if bonus_pt > 0:
+        await points.credit(
+            db, user.id, bonus_pt, PointKind.signup_bonus, "新規登録特典", dedupe_key=f"signup-pt:{user.id}",
+        )
+    from app.services import referrals
+
+    await referrals.maybe_reward(db, user)
+    return True
 
 
 async def authenticate(db: AsyncSession, email: str, password: str) -> User:

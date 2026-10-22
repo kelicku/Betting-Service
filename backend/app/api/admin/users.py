@@ -480,3 +480,26 @@ async def list_messages(_: StaffUser, db: DB, page: int = Query(1, ge=1), per_pa
         ],
         **meta,
     }
+
+
+@router.post("/users/{user_id}/resend-verification")
+async def admin_resend_verification(user_id: int, staff: StaffUser, request: Request, db: DB):
+    """確認メールを再送する（会員から「メールが届かない」と問い合わせがあった場合）。"""
+    u = await _user(db, user_id)
+    if u.email_verified_at is not None:
+        raise AppError("already_verified", "このメールアドレスは確認済みです。")
+    await auth_svc.resend_verification(db, u)
+    audit(db, staff, "user.resend_verification", "user", u.id, None, request)
+    await db.commit()
+    return {"message": "確認メールを再送しました。"}
+
+
+@router.post("/users/{user_id}/verify-email")
+async def admin_verify_email(user_id: int, admin: AdminUser, request: Request, db: DB):
+    """メールアドレスを手動で確認済みにする（本人確認ができた場合のみ）。新規登録特典も通常どおり付与する。"""
+    u = await _user(db, user_id)
+    if not await auth_svc.complete_email_verification(db, u):
+        raise AppError("already_verified", "このメールアドレスは確認済みです。")
+    audit(db, admin, "user.verify_email", "user", u.id, None, request)
+    await db.commit()
+    return row_dict(u, *USER_FIELDS)

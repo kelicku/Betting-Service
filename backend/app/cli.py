@@ -5,6 +5,7 @@
   python -m app.cli create-admin EMAIL   管理者アカウントを作成（パスワードは対話入力または ADMIN_PASSWORD）
   python -m app.cli purge-pii            保持期間を過ぎた配送先情報を消去（cron で日次実行を推奨）
   python -m app.cli verify-draws         抽選結果の改ざん検知（HMAC 照合）
+  python -m app.cli check-mail TO        メール送信の設定を確認（テストメールを送り、失敗したら原因を表示）
 """
 
 import asyncio
@@ -374,12 +375,29 @@ async def verify_draws() -> None:
         sys.exit(1)
 
 
+async def check_mail(to: str) -> None:
+    """メール送信の設定を確認する（テストメールを送り、失敗したら原因を表示する）。"""
+    from app.core import mail
+    from app.core.config import settings
+
+    print(f"送信方法: {settings.mail_backend} / SMTP: {settings.smtp_host}:{settings.smtp_port} / 送信元: {settings.mail_from}")
+    if settings.mail_backend != "smtp" or settings.smtp_host in ("mailpit", "localhost"):
+        print("※ テスト用の受信箱（Mailpit）に送る設定です。実際のメールアドレスには届きません（backend/.env.mail.example を参照）")
+    try:
+        await mail.send_mail(to, f"【{settings.app_name}】メール送信のテスト", "このメールが届いていれば、メール送信の設定は正しく動いています。", raise_errors=True)
+    except Exception as e:  # 認証失敗・接続できない等の原因をそのまま表示
+        sys.exit(f"送信に失敗しました: {type(e).__name__}: {e}")
+    print(f"送信しました: {to}（迷惑メールフォルダも確認してください）")
+
+
 def main() -> None:
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     if cmd == "seed":
         asyncio.run(seed())
     elif cmd == "create-admin" and len(sys.argv) > 2:
         asyncio.run(create_admin(sys.argv[2]))
+    elif cmd == "check-mail" and len(sys.argv) > 2:
+        asyncio.run(check_mail(sys.argv[2]))
     elif cmd == "showcase":
         asyncio.run(showcase())
     elif cmd == "purge-pii":

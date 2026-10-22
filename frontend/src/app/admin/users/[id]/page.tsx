@@ -89,6 +89,27 @@ export default function AdminUserDetail() {
       <div className="mb-5 flex flex-wrap gap-1.5">
         {u.status === "suspended" ? <Badge tone="bad">停止中：{u.suspended_reason}</Badge> : <Badge tone="good">有効</Badge>}
         {u.email_verified_at ? <Badge tone="info">メール確認済み</Badge> : <Badge tone="warn">メール未確認</Badge>}
+        {!u.email_verified_at && (
+          <>
+            <button
+              className="rounded-full border border-gold/40 px-2.5 py-0.5 text-xs font-bold text-gold-light hover:bg-gold/10"
+              onClick={() => run(() => api(`/admin/users/${u.id}/resend-verification`, { method: "POST" }), "確認メールを再送しました")}
+            >
+              確認メールを再送
+            </button>
+            {isAdmin && (
+              <button
+                className="rounded-full border border-gold/40 px-2.5 py-0.5 text-xs font-bold text-gold-light hover:bg-gold/10"
+                onClick={() =>
+                  confirm("ご本人であることを確認できましたか？メールアドレスを確認済みにし、新規登録特典を付与します。") &&
+                  run(() => api(`/admin/users/${u.id}/verify-email`, { method: "POST" }), "メールアドレスを確認済みにしました")
+                }
+              >
+                確認済みにする
+              </button>
+            )}
+          </>
+        )}
         {u.phone_verified_at ? <Badge tone="info">電話番号確認済み（末尾 {u.phone_last4}）</Badge> : <Badge>電話番号未確認</Badge>}
         {u.invite_code && <Badge>招待コード {u.invite_code}</Badge>}
         {u.referred_by_id && <Link href={`/admin/users/${u.referred_by_id}`}><Badge tone="info">紹介者 #{u.referred_by_id}</Badge></Link>}

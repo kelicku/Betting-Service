@@ -28,6 +28,8 @@ docker compose exec backend python -m app.cli showcase   # 参考デザインに
 | http://localhost:8300/api/docs | API ドキュメント（Swagger UI） |
 | http://localhost:8030 | 開発用メール受信箱（Mailpit） |
 
+メールは初期設定ではテスト用の受信箱（http://localhost:8030）に届きます。実際のメールアドレスに届けるには `backend/.env.mail.example` を参照してください。
+
 お客さまに見ていただく一時リンク（Cloudflare）は `./scripts/demo-link.sh` で作成できます（PC の再起動後もこれ 1 つで再開。`stop`・`status`・`new` も使えます）。
 
 | アカウント | メールアドレス | パスワード |
@@ -91,7 +93,7 @@ docker-compose.yml
 ## テスト
 
 ```bash
-cd backend && .venv/bin/pytest            # 103 件（同時アクセス・二重消費・ラストワン賞・署名検証・ポイント交換・SMS・友達紹介を含む）
+cd backend && .venv/bin/pytest            # 105 件（同時アクセス・二重消費・ラストワン賞・署名検証・ポイント交換・SMS・友達紹介を含む）
 cd frontend && npm test                    # 単体テスト
 cd frontend && npx playwright test         # E2E（起動中の環境に対して実行）
 ```

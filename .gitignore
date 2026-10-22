@@ -21,3 +21,4 @@ tools/compare/out/
 deploy/backend.env
 deploy/.env
 deploy/backups/
+backend/.env.mail

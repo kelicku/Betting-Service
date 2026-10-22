@@ -27,9 +27,9 @@ async def test_register_verify_and_signup_bonus(client):
     assert me["email_verified"] is True
     assert me["balance"] == 10  # 新規登録特典
 
-    # 同じトークンは再利用できず、特典も重複しない
+    # 同じトークンはもう使えず（確認済みと案内）、特典も重複しない
     r = await client.post("/api/auth/verify-email", json={"token": token})
-    assert r.status_code == 400
+    assert r.status_code == 409 and r.json()["error"]["code"] == "already_verified"
     assert await balance_of(me["id"]) == 10
 
 
@@ -185,3 +185,35 @@ async def test_allowed_origins_setting(client, monkeypatch):
     assert r.status_code == 403
     err = r.json()["error"]
     assert err["code"] == "origin_not_allowed" and "https://other.example.com" in err["message"]
+
+
+async def test_reopening_used_verification_link_says_already_verified(client):
+    """確認済みのリンクをもう一度開いても「無効」ではなく「確認済み」と案内し、ログインはさせない。"""
+    r = await client.post("/api/auth/register", json={"email": "twice@example.com", "password": "password123", "display_name": "二回", "agree_terms": True})
+    assert r.status_code == 202
+    token = _token_from_outbox()
+    assert (await client.post("/api/auth/verify-email", json={"token": token})).status_code == 200
+    other = client.http.__class__(transport=client.http._transport, base_url="http://testserver")
+    from tests.conftest import Client
+
+    c2 = Client(other)
+    r = await c2.post("/api/auth/verify-email", json={"token": token})
+    assert r.status_code == 409 and r.json()["error"]["code"] == "already_verified"
+    assert (await c2.get("/api/auth/me")).status_code == 401  # 使用済みのリンクではログインしない
+    await other.aclose()
+
+
+async def test_admin_can_resend_and_manually_verify(make_client):
+    from app.core import mail
+    from tests.conftest import balance_of, create_user, login_as
+
+    admin = await create_user(role="admin")
+    u = await create_user(verified=False)
+    ac = await make_client()
+    await login_as(ac, admin)
+    r = await ac.post(f"/api/admin/users/{u.id}/resend-verification")
+    assert r.status_code == 200 and mail.outbox[-1].to == u.email
+    r = await ac.post(f"/api/admin/users/{u.id}/verify-email")
+    assert r.status_code == 200 and r.json()["email_verified_at"] is not None
+    assert await balance_of(u.id) == 10  # 新規登録特典（既定 10 枚）も通常どおり
+    assert (await ac.post(f"/api/admin/users/{u.id}/verify-email")).json()["error"]["code"] == "already_verified"

@@ -45,7 +45,11 @@ services:
 
   backend:
     build: ./backend
-    env_file: [./backend/.env.docker]
+    env_file:
+      - ./backend/.env.docker
+      # 実際にメールを送る設定（Gmail など）。backend/.env.mail.example をコピーして作る。無ければテスト用の受信箱（Mailpit）に届く
+      - path: ./backend/.env.mail
+        required: false
     depends_on:
       db: { condition: service_healthy }
       redis: { condition: service_healthy }
