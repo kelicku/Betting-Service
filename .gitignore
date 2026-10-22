@@ -17,3 +17,7 @@ trajector-doctor-*/
 tools/imagegen/work/
 tools/compare/out/
 .snapshots/
+.demo/
+deploy/backend.env
+deploy/.env
+deploy/backups/

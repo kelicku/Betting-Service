@@ -28,6 +28,8 @@ docker compose exec backend python -m app.cli showcase   # 参考デザインに
 | http://localhost:8300/api/docs | API ドキュメント（Swagger UI） |
 | http://localhost:8030 | 開発用メール受信箱（Mailpit） |
 
+お客さまに見ていただく一時リンク（Cloudflare）は `./scripts/demo-link.sh` で作成できます（PC の再起動後もこれ 1 つで再開。`stop`・`status`・`new` も使えます）。
+
 | アカウント | メールアドレス | パスワード |
 |---|---|---|
 | 管理者 | admin@hoshifuru.example | admin12345 |
@@ -45,6 +47,8 @@ docker compose exec backend python -m app.cli showcase   # 参考デザインに
 | [docs/setup.md](docs/setup.md) | 開発環境構築手順 |
 | [docs/deploy.md](docs/deploy.md) | 本番公開手順・環境変数 |
 | [docs/hosting-proposal.md](docs/hosting-proposal.md) | サーバー構成のご提案（同時接続 1,000〜2,000 人）・負荷試験の結果 |
+| [deploy/README.md](deploy/README.md) | 本番公開のチェックリスト（本番用の構成ファイル・設定の雛形・バックアップ） |
+| [docs/legal-review.md](docs/legal-review.md) | 公開前の法務確認リスト（規約などの空欄・専門家に確認する点） |
 | [docs/operations.md](docs/operations.md) | 運用・保守説明書（日次作業・障害対応・広告事業者の追加・法令確認） |
 | [docs/test-report.md](docs/test-report.md) | テスト結果報告 |
 | [docs/design/reference-analysis.md](docs/design/reference-analysis.md) | 参考画像（トップページ）の分析と寸法 |
@@ -77,6 +81,8 @@ tools/
   imagegen/            画像素材の生成スクリプト（OpenAI 画像編集 API。キーは .env の OPEN_API_KEY）
   compare/             参考画像とのスクリーンショット比較スクリプト
   loadtest/            負荷試験（同時会員・ラストワン競合）
+scripts/demo-link.sh   デモ用の一時リンク（Cloudflare）の作成・再開・停止
+deploy/                本番用の構成（docker-compose.prod.yml・Caddyfile・設定の雛形・手順）
 references/            参考画像（現在：Colorful Fantasy Gacha Game Landing Page.png）
 docker-compose.yml
 .github/workflows/ci.yml
@@ -85,7 +91,7 @@ docker-compose.yml
 ## テスト
 
 ```bash
-cd backend && .venv/bin/pytest            # 102 件（同時アクセス・二重消費・ラストワン賞・署名検証・ポイント交換・SMS・友達紹介を含む）
+cd backend && .venv/bin/pytest            # 103 件（同時アクセス・二重消費・ラストワン賞・署名検証・ポイント交換・SMS・友達紹介を含む）
 cd frontend && npm test                    # 単体テスト
 cd frontend && npx playwright test         # E2E（起動中の環境に対して実行）
 ```

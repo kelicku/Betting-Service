@@ -6,6 +6,7 @@
   なければ自動発行（gift_issuer）、それもなければ運営が手動でコードを入力する
 - 物の景品：配送先を暗号化して保存し、運営が発送して追跡番号を登録する
 - 取消（受付中のみ）：ポイントを返還し、在庫を戻す
+- 行ロックの順番は常に「景品 → ポイント残高」（デッドロック防止）
 """
 
 import hashlib
@@ -196,9 +197,10 @@ def order_out(o: ShopOrder, *, reveal_code: bool) -> dict:
 
 
 async def _refund(db: AsyncSession, order: ShopOrder, reason: str) -> None:
+    # ロックの順番は申請時と同じ「景品 → ポイント残高」にそろえる（逆順だと同時処理でデッドロックになる）
+    item = (await db.execute(select(ShopItem).where(ShopItem.id == order.item_id).with_for_update())).scalar_one()
     await points.credit(db, order.user_id, order.point_cost, PointKind.refund, f"ポイント交換の取消：{order.item_name}（{reason}）",
                         dedupe_key=f"shop-refund:{order.id}", ref_type="shop_order", ref_id=str(order.id))
-    item = (await db.execute(select(ShopItem).where(ShopItem.id == order.item_id).with_for_update())).scalar_one()
     if item.stock_remaining is not None:
         item.stock_remaining += 1
 

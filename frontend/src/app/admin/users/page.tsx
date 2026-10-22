@@ -5,7 +5,7 @@ import { Badge, SearchInput, Select, TableWrap, Toolbar, useAdminList } from "@/
 import { PageTitle, Pagination, Spinner } from "@/components/ui";
 import { fmtDateTime, fmtNum } from "@/lib/format";
 
-type U = { id: number; email: string; display_name: string; role: string; status: string; email_verified_at: string | null; last_login_at: string | null; created_at: string; balance: number };
+type U = { id: number; email: string; display_name: string; role: string; status: string; email_verified_at: string | null; last_login_at: string | null; created_at: string; balance: number; point_balance?: number };
 
 export default function AdminUsers() {
   const l = useAdminList<U>("/api/admin/users", { q: "", status: "", role: "", verified: "" });
@@ -29,6 +29,7 @@ export default function AdminUsers() {
                 <th>ニックネーム / メール</th>
                 <th>状態</th>
                 <th className="text-right">チケット</th>
+                <th className="text-right">ポイント</th>
                 <th>最終ログイン</th>
                 <th>登録日時</th>
               </tr>
@@ -49,6 +50,7 @@ export default function AdminUsers() {
                     {!u.email_verified_at && <Badge tone="warn">メール未確認</Badge>}
                   </td>
                   <td className="text-right tabular-nums">{fmtNum(u.balance)}</td>
+                  <td className="text-right tabular-nums">{fmtNum(u.point_balance ?? 0)}</td>
                   <td className="text-xs text-moon/60">{fmtDateTime(u.last_login_at)}</td>
                   <td className="text-xs text-moon/60">{fmtDateTime(u.created_at)}</td>
                 </tr>

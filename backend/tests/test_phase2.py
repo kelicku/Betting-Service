@@ -395,3 +395,15 @@ async def test_referral_waits_for_sms_when_required(client, make_client):
     assert (await newbie.post("/api/phone/verify", json={"code": _code()})).status_code == 200
     assert await balance_of(me["id"]) == 5 and await balance_of(inviter.id) == 10
     assert sms.outbox
+
+
+async def test_sms_rejects_international_numbers(client):
+    """海外の番号への送信は受け付けない（SMS パンピングによる費用の不正発生を防ぐ）。"""
+    from app.services import sms
+
+    u = await create_user()
+    await login_as(client, u)
+    for phone in ["+1 415 555 0100", "+44 7700 900123", "+86 138 0013 8000"]:
+        r = await client.post("/api/phone/send-code", json={"phone": phone})
+        assert r.status_code == 400 and r.json()["error"]["code"] == "invalid_phone"
+    assert sms.outbox == [] or all(m.to.startswith("+81") for m in sms.outbox)

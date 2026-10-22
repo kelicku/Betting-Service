@@ -1,0 +1,100 @@
+# 本番用の構成（VPS 1 台、または同じ構成をクラウドのコンテナサービスへ移す場合のひな形）。
+#   cd deploy && cp backend.env.example backend.env && cp .env.example .env   # 値を埋める
+#   docker compose -f docker-compose.prod.yml up -d --build
+# 外部に公開するのは Caddy（80/443）だけ。バックエンド・DB・Redis は内部ネットワークのみ。
+# マネージド DB / Redis を使う場合は、db / redis を削除し backend.env の DATABASE_URL / REDIS_URL を差し替える。
+name: wakuwaku-prod
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: gacha
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD を deploy/.env に設定してください}
+      POSTGRES_DB: gacha
+    command: ["postgres", "-c", "max_connections=200"]
+    volumes: [dbdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U gacha"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes: [redisdata:/data]
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  backend:
+    build: ../backend
+    restart: unless-stopped
+    env_file: [./backend.env]
+    depends_on:
+      db: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    volumes: [uploads:/app/var/uploads]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request;urllib.request.urlopen('http://localhost:8000/api/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  frontend:
+    build:
+      context: ../frontend
+      args:
+        BACKEND_INTERNAL_URL: http://backend:8000
+    restart: unless-stopped
+    environment:
+      BACKEND_INTERNAL_URL: http://backend:8000
+    depends_on:
+      backend: { condition: service_healthy }
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ["80:80", "443:443", "443:443/udp"]
+    environment:
+      DOMAIN: ${DOMAIN:?DOMAIN を deploy/.env に設定してください}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddydata:/data
+      - caddyconfig:/config
+    depends_on: [frontend]
+
+  # 毎日 3 時（日本時間）にデータベースをバックアップ（14 日分を保持）。別の場所への保管も必ず行うこと
+  backup:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      PGPASSWORD: ${DB_PASSWORD}
+      TZ: Asia/Tokyo
+    volumes: [./backups:/backups]
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        while true; do
+          now=$$(date +%H%M)
+          if [ "$$now" = "0300" ]; then
+            pg_dump -h db -U gacha -Fc gacha > /backups/gacha-$$(date +%Y%m%d).dump && echo "backup ok"
+            find /backups -name 'gacha-*.dump' -mtime +14 -delete
+            sleep 60
+          fi
+          sleep 30
+        done
+    depends_on:
+      db: { condition: service_healthy }
+
+volumes:
+  dbdata:
+  redisdata:
+  uploads:
+  caddydata:
+  caddyconfig:

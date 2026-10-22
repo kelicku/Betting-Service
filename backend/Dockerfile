@@ -9,4 +9,4 @@ USER app
 EXPOSE 8000
 # 起動時にマイグレーションを適用してから API を起動する。
 # X-Forwarded-For はプライベートネットワーク（フロントエンド・LB）からのものだけを信頼する（IP 偽装によるレート制限回避を防ぐ）
-CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --proxy-headers --forwarded-allow-ips=${FORWARDED_ALLOW_IPS:-127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16} --workers ${WEB_CONCURRENCY:-2}"]
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host ${BIND_HOST:-0.0.0.0} --port 8000 --proxy-headers --forwarded-allow-ips=${FORWARDED_ALLOW_IPS:-127.0.0.1,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16} --workers ${WEB_CONCURRENCY:-2}"]

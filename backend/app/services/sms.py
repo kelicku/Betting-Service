@@ -43,18 +43,21 @@ def now() -> datetime:
 
 
 def normalize_phone(raw: str) -> str:
-    """日本の携帯番号（090-1234-5678 など）または +国番号付きの番号を E.164 形式にする。"""
+    """日本の携帯番号（090-1234-5678、+81 90 1234 5678 など）を E.164 形式（+819012345678）にする。
+
+    海外の番号は受け付けない（高額な海外番号へ確認コードを大量に送らせる「SMS パンピング」による費用の不正発生を防ぐ）。
+    """
     s = re.sub(r"[\s\-‐ー－()（）]", "", raw.strip()).translate(str.maketrans("０１２３４５６７８９＋", "0123456789+"))
-    if s.startswith("+"):
+    if s.startswith("+81"):
         e164 = s
     elif s.startswith("0"):
         e164 = "+81" + s[1:]
+    elif s.startswith("+"):
+        raise AppError("invalid_phone", "日本の携帯電話番号を入力してください。")
     else:
         raise AppError("invalid_phone", "電話番号の形式が正しくありません。")
-    if not re.fullmatch(r"\+[1-9]\d{8,14}", e164):
-        raise AppError("invalid_phone", "電話番号の形式が正しくありません。")
-    # 日本の番号は SMS を受け取れる携帯番号（070・080・090）に限る
-    if e164.startswith("+81") and not re.fullmatch(r"\+81[789]0\d{8}", e164):
+    # SMS を受け取れる携帯番号（070・080・090）に限る
+    if not re.fullmatch(r"\+81[789]0\d{8}", e164):
         raise AppError("invalid_phone", "SMS を受信できる携帯電話番号（070・080・090 で始まる番号）を入力してください。")
     return e164
 

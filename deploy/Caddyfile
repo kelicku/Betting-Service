@@ -1,0 +1,13 @@
+# HTTPS の入口。証明書（Let's Encrypt）は Caddy が自動で取得・更新する。
+# DOMAIN は deploy/.env（docker compose の変数）で指定する。
+{$DOMAIN} {
+	encode zstd gzip
+	# /api/* もフロントエンドがバックエンドへ中継するため、すべてフロントエンドへ送る
+	reverse_proxy frontend:3000
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options "nosniff"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+}

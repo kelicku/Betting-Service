@@ -21,7 +21,6 @@ const NAV: { href: string; label: string; adminOnly?: boolean }[] = [
   { href: "/admin/shop", label: "交換景品・ギフトコード" },
   { href: "/admin/referrals", label: "友達紹介" },
   { href: "/admin/messages", label: "メッセージ配信" },
-  { href: "/admin/banners", label: "キャンペーンバナー" },
   { href: "/admin/audit", label: "操作履歴", adminOnly: true },
   { href: "/admin/settings", label: "システム設定" },
 ];

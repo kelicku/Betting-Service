@@ -6,7 +6,7 @@ import { useState } from "react";
 import useSWR from "swr";
 import { Badge, TableWrap } from "@/components/admin/kit";
 import { useToast } from "@/components/Toast";
-import { Button, Field, Modal, PageTitle, Spinner } from "@/components/ui";
+import { Alert, Button, Field, Modal, PageTitle, Spinner } from "@/components/ui";
 import { ApiError, api, fetcher } from "@/lib/api";
 import { fmtNum } from "@/lib/format";
 import { useMe } from "@/lib/hooks";
@@ -21,6 +21,7 @@ const num = (v: string) => (v === "" ? null : Number(v));
 
 export default function AdminShop() {
   const { data, mutate } = useSWR<{ items: Item[] }>("/api/admin/shop/items", fetcher);
+  const { data: cfg } = useSWR<{ demo_login: boolean }>("/api/config", fetcher);
   const [edit, setEdit] = useState<Item | null>(null);
   const [codesFor, setCodesFor] = useState<Item | null>(null);
   const [codes, setCodes] = useState("");
@@ -84,6 +85,14 @@ export default function AdminShop() {
         sub="会員がポイントで交換できる景品です。デジタルギフトは、ギフトコードを登録しておくと交換時にすぐお渡しされます（在庫がない場合は「ポイント交換の申請」から手動でお渡し）。"
         right={isAdmin && <Button onClick={() => setEdit({ ...EMPTY })}>景品を追加</Button>}
       />
+      {cfg?.demo_login && (
+        <div className="mb-4">
+          <Alert kind="warn">
+            この環境では「ワンクリックでログイン」（お試しアカウント）が有効です。誰でも何度でもお試しアカウントを作れるため、
+            <strong>本物のギフトコードは登録しないでください</strong>（テスト用のコードのみ）。本番環境では自動で無効になります。
+          </Alert>
+        </div>
+      )}
       {!data ? (
         <Spinner />
       ) : (
@@ -164,6 +173,7 @@ export default function AdminShop() {
       <Modal open={!!codesFor} onClose={() => !busy && setCodesFor(null)} title="ギフトコードの登録">
         {codesFor && (
           <div className="space-y-3">
+            {cfg?.demo_login && <Alert kind="warn">お試しログインが有効な環境です。本物のギフトコードは登録しないでください。</Alert>}
             <p className="text-sm text-moon/70">「{codesFor.name}」のギフトコードを 1 行に 1 件ずつ貼り付けてください（最大 5,000 件）。重複は自動で除外され、受付中の申請があれば古い順にお渡しします。コードは暗号化して保存され、運営画面には表示されません。</p>
             <textarea className="field font-mono text-sm" rows={8} value={codes} onChange={(e) => setCodes(e.target.value)} placeholder={"XXXX-XXXX-XXXX\nYYYY-YYYY-YYYY"} />
             <Field label="有効期限（任意）"><input className="field" type="date" value={expires} onChange={(e) => setExpires(e.target.value)} /></Field>
