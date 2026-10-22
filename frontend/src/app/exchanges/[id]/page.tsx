@@ -26,10 +26,10 @@ function Content() {
   if (!ex) return <Spinner />;
   const idx = FLOW.findIndex(([s]) => s === ex.status);
   const cancel = async () => {
-    if (!confirm("この交換申請を取り消しますか？")) return;
+    if (!confirm("この発送申請を取り消しますか？")) return;
     try {
       await api(`/exchanges/${ex.id}/cancel`, { method: "POST" });
-      toast("交換申請を取り消しました。");
+      toast("発送申請を取り消しました。");
       mutate();
     } catch (e) {
       toast((e as ApiError).message, "error");
@@ -37,7 +37,7 @@ function Content() {
   };
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <PageTitle en="EXCHANGE" title={`交換申請 #${ex.id}`} sub={`申請日時：${fmtDateTime(ex.created_at)}`} right={<StatusPill status={ex.status} label={ex.status_label} />} />
+      <PageTitle en="EXCHANGE" title={`発送申請 #${ex.id}`} sub={`申請日時：${fmtDateTime(ex.created_at)}`} right={<StatusPill status={ex.status} label={ex.status_label} />} />
       {ex.status === "rejected" || ex.status === "cancelled" ? (
         <div className="mb-6">
           <Alert kind={ex.status === "rejected" ? "error" : "info"}>
@@ -75,7 +75,7 @@ function Content() {
         </Panel>
       )}
       <Panel>
-        <h2 className="mb-4 font-serif font-bold text-gold-light">交換する景品</h2>
+        <h2 className="mb-4 font-serif font-bold text-gold-light">発送する景品</h2>
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
           {ex.items.map((it) => (
             <PrizeCard key={it.user_prize_id} prize={it.prize} size="sm" />

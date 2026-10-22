@@ -46,7 +46,7 @@ DESCRIPTIONS: dict[str, str] = {
     "maintenance_mode": "メンテナンスモード（有効時は一般ユーザーの抽選・獲得操作を停止）",
     "maintenance_message": "メンテナンス中に表示するメッセージ",
     "pii_retention_days": "交換完了後に配送先情報を保持する日数",
-    "exchange_requires_verified_email": "景品交換にメール認証を必須とする",
+    "exchange_requires_verified_email": "景品の発送申請にメール認証を必須とする",
     "sns_x_url": "公式 X（旧 Twitter）の URL（空欄なら「準備中」と表示）",
     "sns_instagram_url": "公式 Instagram の URL",
     "sns_youtube_url": "公式 YouTube チャンネルの URL",

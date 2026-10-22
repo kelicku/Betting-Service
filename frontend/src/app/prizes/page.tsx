@@ -10,7 +10,7 @@ import { fetcher } from "@/lib/api";
 import { RARITY, fmtDateTime } from "@/lib/format";
 import type { Page, Rarity, UserPrize } from "@/lib/types";
 
-const STATUS_LABEL: Record<UserPrize["status"], string> = { owned: "所持中", exchange_pending: "交換申請中", exchanged: "交換済み" };
+const STATUS_LABEL: Record<UserPrize["status"], string> = { owned: "所持中", exchange_pending: "発送申請中", exchanged: "発送完了" };
 
 function Content() {
   const sp = useSearchParams();
@@ -44,11 +44,11 @@ function Content() {
             <div className="flex gap-2">
               <Button variant="subtle" onClick={() => (setSelecting(false), setPicked(new Set()))}>キャンセル</Button>
               <Button disabled={picked.size === 0} onClick={() => router.push(`/exchanges/new?ids=${[...picked].join(",")}`)}>
-                景品交換を申請する（{picked.size}点）
+                発送を申請する（{picked.size}点）
               </Button>
             </div>
           ) : (
-            <Button variant="ghost" onClick={() => (setSelecting(true), setStatus("owned"), setPage(1))}>交換する景品を選ぶ</Button>
+            <Button variant="ghost" onClick={() => (setSelecting(true), setStatus("owned"), setPage(1))}>発送する景品を選ぶ</Button>
           )
         }
       />
@@ -59,8 +59,8 @@ function Content() {
           items={[
             { value: "all", label: "すべて" },
             { value: "owned", label: "所持中" },
-            { value: "exchange_pending", label: "交換申請中" },
-            { value: "exchanged", label: "交換済み" },
+            { value: "exchange_pending", label: "発送申請中" },
+            { value: "exchanged", label: "発送完了" },
           ]}
         />
         <select className="field mb-5 w-auto py-2 text-sm" value={rarity} onChange={(e) => (setRarity(e.target.value as Rarity), setPage(1))} aria-label="レアリティで絞り込み">
@@ -70,7 +70,7 @@ function Content() {
           ))}
         </select>
       </div>
-      {selecting && <p className="mb-4 text-sm text-gold-light/80">交換したい景品をタップして選択してください（所持中の景品のみ選択できます）。</p>}
+      {selecting && <p className="mb-4 text-sm text-gold-light/80">発送したい景品をタップして選択してください（所持中の景品のみ選択できます）。</p>}
       {!data ? (
         <Spinner />
       ) : data.items.length === 0 ? (
@@ -131,10 +131,10 @@ function Content() {
             <dl className="w-full space-y-1 rounded-xl bg-veil/[0.03] p-4 text-left text-sm">
               <div className="flex justify-between"><dt className="text-moon/55">獲得日時</dt><dd>{fmtDateTime(detail.acquired_at)}</dd></div>
               <div className="flex justify-between"><dt className="text-moon/55">獲得元</dt><dd>{detail.gacha_title ?? "—"}{detail.source === "last_one" && "（ラストワン賞）"}</dd></div>
-              <div className="flex justify-between"><dt className="text-moon/55">交換状況</dt><dd>{STATUS_LABEL[detail.status]}</dd></div>
+              <div className="flex justify-between"><dt className="text-moon/55">発送状況</dt><dd>{STATUS_LABEL[detail.status]}</dd></div>
             </dl>
             {detail.status === "owned" && detail.is_exchangeable && (
-              <Button className="w-full" href={`/exchanges/new?ids=${detail.id}`}>この景品の交換を申請する</Button>
+              <Button className="w-full" href={`/exchanges/new?ids=${detail.id}`}>この景品の発送を申請する</Button>
             )}
           </div>
         )}

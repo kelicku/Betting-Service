@@ -18,11 +18,14 @@ test("トップページにキャッチコピーとピックアップガチャ�
   await expect(page.getByRole("heading", { name: "ピックアップガチャ" })).toBeVisible();
 });
 
-test("未ログインでガチャを引こうとするとログイン画面へ", async ({ browser }) => {
+test("未ログインでガチャを引こうとすると新規登録画面へ（特典を表示し、ログインへも進める）", async ({ browser }) => {
   const page = await (await browser.newContext({ storageState: undefined })).newPage();
   await page.goto(GACHA);
   await page.getByRole("button", { name: /^ガチャを引く/ }).first().click();
-  await expect(page).toHaveURL(/\/login\?next=/);
+  await expect(page).toHaveURL(/\/register\?next=%2Fgacha%2F/);
+  await expect(page.getByText("ガチャを引くには、無料の会員登録が必要です。")).toBeVisible();
+  await expect(page.locator(".bonus-banner")).toBeVisible();
+  await expect(page.locator("form").getByRole("link", { name: "ログイン", exact: true })).toHaveAttribute("href", /\/login\?next=%2Fgacha%2F/);
 });
 
 test("ログインしてガチャを引くとポイントが消費され結果が表示される", async ({ page }) => {

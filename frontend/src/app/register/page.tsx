@@ -1,15 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import DemoLogin from "@/components/DemoLogin";
 import { AuthShell } from "@/components/Guard";
 import { Alert, Button, Field } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
-import { useSignupBonus } from "@/lib/hooks";
+import { SignupBonusBanner } from "@/components/SignupBonus";
+import { rememberAfterVerify, signupBonusText, useSignupBonus } from "@/lib/hooks";
+
+function safeNext(n: string | null) {
+  return n && n.startsWith("/") && !n.startsWith("//") ? n : null;
+}
 
 export default function RegisterPage() {
+  return (
+    <Suspense>
+      <RegisterForm />
+    </Suspense>
+  );
+}
+
+function RegisterForm() {
   const bonus = useSignupBonus();
+  // ガチャ詳細などから来た場合（/register?next=/gacha/xxx）、登録・メール確認のあとにその画面へ戻す
+  const next = safeNext(useSearchParams().get("next"));
+  const fromGacha = !!next?.startsWith("/gacha/");
   const [form, setForm] = useState({ email: "", password: "", display_name: "", agree_terms: false, invite_code: "" });
   // 招待リンク（/register?ref=XXXX）から来た場合は招待コードを入れておく
   useEffect(() => {
@@ -30,6 +47,7 @@ export default function RegisterPage() {
     setLoading(true);
     try {
       const res = await api<{ message: string }>("/auth/register", { body: { ...form, invite_code: form.invite_code.trim() || null } });
+      rememberAfterVerify(next);
       setDone(res.message);
     } catch (err) {
       setError((err as ApiError).message);
@@ -51,7 +69,7 @@ export default function RegisterPage() {
           <p className="text-xs text-moon/50">
             メールが届かない場合は、迷惑メールフォルダをご確認ください。リンクの有効期限は24時間です。
           </p>
-          <Button variant="ghost" href="/login" className="w-full">
+          <Button variant="ghost" href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="w-full">
             ログイン画面へ
           </Button>
         </div>
@@ -61,9 +79,11 @@ export default function RegisterPage() {
 
   return (
     <AuthShell title="新規登録" en="CREATE ACCOUNT">
-      <DemoLogin />
+      {fromGacha && <p className="mb-3 text-center text-sm font-bold text-gold-light">ガチャを引くには、無料の会員登録が必要です。</p>}
+      <SignupBonusBanner className="mb-5" />
+      <DemoLogin next={next ?? undefined} />
       <form onSubmit={submit} className="mt-6 space-y-5" noValidate>
-        <Alert kind="info">メールアドレスの確認が完了すると、新規登録特典として{bonus ? `チケット${bonus.toLocaleString("ja-JP")}枚` : "チケット"}をお贈りします。</Alert>
+        <Alert kind="info">メールアドレスの確認が完了すると、新規登録特典として{signupBonusText(bonus) || "チケット"}をお贈りします。</Alert>
         {error && <Alert kind="error">{error}</Alert>}
         <Field label="ニックネーム" hint="20文字以内。サイト内で表示されます。">
           <input className="field" maxLength={20} required value={form.display_name} onChange={(e) => setForm({ ...form, display_name: e.target.value })} />
@@ -100,7 +120,7 @@ export default function RegisterPage() {
           登録して確認メールを受け取る
         </Button>
         <p className="text-center text-sm text-moon/60">
-          既にアカウントをお持ちの方は <Link href="/login" className="text-gold-light hover:underline">ログイン</Link>
+          既にアカウントをお持ちの方は <Link href={next ? `/login?next=${encodeURIComponent(next)}` : "/login"} className="text-gold-light hover:underline">ログイン</Link>
         </p>
       </form>
     </AuthShell>

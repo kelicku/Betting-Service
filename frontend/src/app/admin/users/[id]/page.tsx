@@ -117,9 +117,9 @@ export default function AdminUserDetail() {
       </div>
       <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
         <Stat label="チケット残高" value={fmtNum(u.wallet?.balance ?? 0)} sub={`獲得 ${fmtNum(u.wallet?.total_earned ?? 0)}・使用 ${fmtNum(u.wallet?.total_spent ?? 0)}`} />
-        <Stat label="ポイント残高" value={fmtNum(u.point_wallet?.balance ?? 0)} sub={`獲得 ${fmtNum(u.point_wallet?.total_earned ?? 0)}・交換 ${fmtNum(u.point_wallet?.total_spent ?? 0)}`} />
-        <Stat label="所持景品" value={u.prize_counts.owned ?? 0} sub={`申請中 ${u.prize_counts.exchange_pending ?? 0}・交換済 ${u.prize_counts.exchanged ?? 0}`} />
-        <Stat label="交換申請" value={u.exchanges} />
+        <Stat label="ポイント残高" value={fmtNum(u.point_wallet?.balance ?? 0)} sub={`獲得 ${fmtNum(u.point_wallet?.total_earned ?? 0)}・ポイント交換 ${fmtNum(u.point_wallet?.total_spent ?? 0)}`} />
+        <Stat label="所持景品" value={u.prize_counts.owned ?? 0} sub={`申請中 ${u.prize_counts.exchange_pending ?? 0}・発送完了 ${u.prize_counts.exchanged ?? 0}`} />
+        <Stat label="発送申請" value={u.exchanges} />
         <Stat label="登録日時" value={<span className="text-base">{fmtDateTime(u.created_at)}</span>} sub={`最終ログイン ${fmtDateTime(u.last_login_at)}`} />
       </div>
 

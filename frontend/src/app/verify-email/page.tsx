@@ -6,7 +6,7 @@ import { Suspense, useEffect, useRef, useState } from "react";
 import { AuthShell } from "@/components/Guard";
 import { Alert, Button, Points, Spinner, Tickets } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
-import { refreshMe } from "@/lib/hooks";
+import { refreshMe, takeAfterVerify } from "@/lib/hooks";
 import type { Me } from "@/lib/types";
 
 function Verify() {
@@ -14,6 +14,8 @@ function Verify() {
   const [me, setMe] = useState<Me | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [already, setAlready] = useState(false);
+  // 登録前に見ていたガチャ（あれば）へ戻る
+  const [after, setAfter] = useState("/gacha");
   const once = useRef(false);
   useEffect(() => {
     if (once.current) return;
@@ -24,6 +26,7 @@ function Verify() {
     }
     api<Me>("/auth/verify-email", { body: { token } })
       .then((m) => {
+        setAfter(takeAfterVerify() ?? "/gacha");
         setMe(m);
         refreshMe();
       })
@@ -69,7 +72,7 @@ function Verify() {
         )}
         をお贈りしました。
       </p>
-      <Button size="lg" href="/gacha" className="w-full">さっそくガチャを引く</Button>
+      <Button size="lg" href={after} className="w-full">さっそくガチャを引く</Button>
     </div>
   );
 }

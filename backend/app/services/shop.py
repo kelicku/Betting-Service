@@ -114,7 +114,7 @@ async def place_order(
         return existing
     item = (await db.execute(select(ShopItem).where(ShopItem.id == item_id).with_for_update())).scalar_one_or_none()
     if item is None or not item.is_active:
-        raise NotFound("この景品は現在交換できません。")
+        raise NotFound("この景品は現在ポイント交換できません。")
     if item.stock_remaining is not None and item.stock_remaining <= 0:
         raise AppError("sold_out", "この景品は在庫切れです。", 409)
     if item.per_user_limit is not None and await user_order_count(db, user.id, item.id) >= item.per_user_limit:
@@ -161,7 +161,7 @@ async def place_order(
         db.add(_fulfilled_notice(order))
     else:
         db.add(Notification(user_id=user.id, kind="shop", title="ポイント交換を受け付けました",
-                            body=f"「{item.name}」の交換を受け付けました。" + ("発送までしばらくお待ちください。" if item.kind == ShopItemKind.shipping else "ギフトコードのご用意ができ次第お知らせします。"),
+                            body=f"「{item.name}」のポイント交換を受け付けました。" + ("発送までしばらくお待ちください。" if item.kind == ShopItemKind.shipping else "ギフトコードのご用意ができ次第お知らせします。"),
                             link="/shop/orders"))
     await db.commit()
     if fulfilled:
@@ -177,7 +177,7 @@ async def load_order(db: AsyncSession, order_id: uuid.UUID, user_id: int | None 
         q = q.where(ShopOrder.user_id == user_id)
     order = (await db.execute(q)).scalar_one_or_none()
     if order is None:
-        raise NotFound("交換申請が見つかりません。")
+        raise NotFound("ポイント交換の申請が見つかりません。")
     return order
 
 
@@ -208,7 +208,7 @@ async def _refund(db: AsyncSession, order: ShopOrder, reason: str) -> None:
 async def cancel_by_user(db: AsyncSession, user: User, order_id: uuid.UUID) -> ShopOrder:
     order = (await db.execute(select(ShopOrder).where(ShopOrder.id == order_id, ShopOrder.user_id == user.id).with_for_update())).scalar_one_or_none()
     if order is None:
-        raise NotFound("交換申請が見つかりません。")
+        raise NotFound("ポイント交換の申請が見つかりません。")
     if order.status != ShopOrderStatus.pending:
         raise AppError("not_cancellable", "この申請は取り消せません。")
     order.status = ShopOrderStatus.cancelled
@@ -223,7 +223,7 @@ async def admin_transition(
 ) -> ShopOrder:
     order = (await db.execute(select(ShopOrder).where(ShopOrder.id == order_id).with_for_update())).scalar_one_or_none()
     if order is None:
-        raise NotFound("交換申請が見つかりません。")
+        raise NotFound("ポイント交換の申請が見つかりません。")
     target = ShopOrderStatus(to)
     if target not in SHOP_ORDER_TRANSITIONS[ShopOrderStatus(order.status)]:
         raise AppError("invalid_transition", f"「{STATUS_LABELS[order.status]}」から「{STATUS_LABELS[target]}」には変更できません。")
@@ -258,7 +258,7 @@ async def admin_transition(
         order.admin_note = (note or "").strip()[:500] or None
         await _refund(db, order, "運営による取消")
         db.add(Notification(user_id=order.user_id, kind="shop", title="ポイント交換が取り消されました",
-                            body=f"「{order.item_name}」の交換を取り消し、{order.point_cost:,}ptを返還しました。" + (f"（{order.admin_note}）" if order.admin_note else ""),
+                            body=f"「{order.item_name}」のポイント交換を取り消し、{order.point_cost:,}ptを返還しました。" + (f"（{order.admin_note}）" if order.admin_note else ""),
                             link="/shop/orders"))
     await db.commit()
     if user and target in (ShopOrderStatus.fulfilled, ShopOrderStatus.shipped):

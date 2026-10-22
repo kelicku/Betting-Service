@@ -13,7 +13,8 @@ import { useToast } from "@/components/Toast";
 import { Alert, Button, Modal, Ornament, Panel, RarityBadge, TicketIcon, Tickets, cx } from "@/components/ui";
 import { fetcher } from "@/lib/api";
 import { RARITIES, RARITY, fmtDateTime, fmtNum, fmtPercent, timeLeft } from "@/lib/format";
-import { useMe, useSignupBonus } from "@/lib/hooks";
+import { SignupBonusBanner } from "@/components/SignupBonus";
+import { useMe } from "@/lib/hooks";
 import { createPending } from "@/lib/pending";
 import type { GachaDetail } from "@/lib/types";
 
@@ -23,7 +24,6 @@ const LABEL: Record<Count, string> = { 1: "ガチャを引く", 10: "10回まと
 export default function GachaDetailView({ initial }: { initial: GachaDetail }) {
   const { data } = useSWR<GachaDetail>(`/api/gachas/${initial.slug}`, fetcher, { fallbackData: initial, refreshInterval: 15000 });
   const g = data ?? initial;
-  const bonus = useSignupBonus();
   const { me, loading: meLoading } = useMe();
   const router = useRouter();
   const toast = useToast();
@@ -40,7 +40,8 @@ export default function GachaDetailView({ initial }: { initial: GachaDetail }) {
 
   const start = (n: Count) => {
     if (!me) {
-      router.push(`/login?next=${encodeURIComponent(`/gacha/${g.slug}`)}`);
+      // 未登録の方は、そのまま新規登録へ（登録済みの方は登録画面からログインへ進める）
+      router.push(`/register?next=${encodeURIComponent(`/gacha/${g.slug}`)}`);
       return;
     }
     if (!me.email_verified) {
@@ -207,7 +208,14 @@ export default function GachaDetailView({ initial }: { initial: GachaDetail }) {
                 <Tickets n={me.balance} className="text-lg text-gold-light" />
               </div>
             ) : (
-              <Alert kind="info">ガチャを引くにはログインが必要です。{bonus ? `新規登録でチケット${bonus.toLocaleString("ja-JP")}枚をプレゼント中です。` : ""}</Alert>
+              <div className="space-y-3">
+                <SignupBonusBanner />
+                <p className="text-center text-sm text-moon/70">ガチャを引くには、無料の会員登録が必要です。</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button href={`/register?next=${encodeURIComponent(`/gacha/${g.slug}`)}`}>無料で新規登録</Button>
+                  <Button variant="ghost" href={`/login?next=${encodeURIComponent(`/gacha/${g.slug}`)}`}>ログイン</Button>
+                </div>
+              </div>
             )}
             {!g.is_open && <Alert kind="warn">このガチャは現在開催されていません。</Alert>}
             <DrawButtons />

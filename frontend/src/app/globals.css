@@ -579,3 +579,39 @@ main:has(.home-page) { background: #fff8f1; }
   transition: transform 0.2s ease;
 }
 .carousel-arrow:hover { transform: scale(1.08); }
+
+/* 新規登録特典のカード：数字を大きく、白い縁取り＋影で目立たせる */
+.promo-bonus { border-color: #ff9cc0; animation: bonus-glow 2.4s ease-in-out infinite; }
+@keyframes bonus-glow {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.9), 0 10px 24px -14px rgba(240, 33, 94, 0.55); }
+  50% { box-shadow: 0 0 0 4px #fff, 0 0 22px 2px rgba(255, 79, 151, 0.45), 0 10px 24px -14px rgba(240, 33, 94, 0.55); }
+}
+.bonus-ribbon {
+  background: linear-gradient(180deg, #ff5d8f, #f0215e);
+  box-shadow: 0 0 0 2px #fff, 0 4px 10px -3px rgba(240, 33, 94, 0.7);
+}
+.bonus-outline .outline-back {
+  filter: drop-shadow(0 2px 0 #f0215e) drop-shadow(0 4px 8px rgba(240, 33, 94, 0.35));
+}
+.bonus-amount { display: inline-block; animation: bonus-pop 2.4s ease-in-out infinite; transform-origin: left center; }
+@keyframes bonus-pop {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* 登録画面・ガチャ画面の特典の帯 */
+.bonus-banner {
+  background: linear-gradient(115deg, #ff4f8b 0%, #ff6f7a 50%, #ffa53f 100%);
+  box-shadow: 0 10px 24px -12px rgba(240, 33, 94, 0.7);
+}
+.bonus-banner .outline-back {
+  -webkit-text-stroke-color: #c2185b;
+  filter: drop-shadow(0 3px 0 rgba(150, 10, 60, 0.45));
+}
+.bonus-banner .outline-back * { color: #c2185b !important; -webkit-text-fill-color: #c2185b; }
+
+/* ヘッダーのメニュー：画面の高さに収め、はみ出す分はメニューの中でスクロール（スマートフォンは下部ナビの分も空ける） */
+.menu-panel { max-height: calc(100dvh - 4.75rem - 4.5rem - env(safe-area-inset-bottom)); }
+@media (min-width: 768px) {
+  .menu-panel { max-height: calc(100dvh - 7rem); }
+}

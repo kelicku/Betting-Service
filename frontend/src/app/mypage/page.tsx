@@ -116,8 +116,8 @@ function Content({ me }: { me: Me }) {
           </div>
           <div className="mt-4 flex flex-wrap gap-4 text-sm text-moon/60">
             <span>所持中 {summary?.by_status.owned ?? 0}点</span>
-            <span>交換申請中 {summary?.by_status.exchange_pending ?? 0}点</span>
-            <span>交換済み {summary?.by_status.exchanged ?? 0}点</span>
+            <span>発送申請中 {summary?.by_status.exchange_pending ?? 0}点</span>
+            <span>発送完了 {summary?.by_status.exchanged ?? 0}点</span>
           </div>
         </Panel>
         <div className="space-y-6">

@@ -15,12 +15,12 @@ function Content() {
   const { data } = useSWR<Page<Exchange>>(`/api/exchanges?page=${page}`, fetcher, { keepPreviousData: true });
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <PageTitle en="EXCHANGE HISTORY" title="景品交換履歴" right={<Button variant="ghost" href="/prizes">景品交換を申請する</Button>} />
+      <PageTitle en="EXCHANGE HISTORY" title="景品の発送申請" right={<Button variant="ghost" href="/prizes">発送を申請する</Button>} />
       <Panel>
         {!data ? (
           <Spinner />
         ) : data.items.length === 0 ? (
-          <Empty title="交換申請はまだありません" />
+          <Empty title="発送の申請はまだありません" />
         ) : (
           <ul className="divide-y divide-veil/5">
             {data.items.map((ex) => (

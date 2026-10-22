@@ -64,7 +64,7 @@ function Content() {
       const res = await api<Exchange>("/exchanges", {
         body: { user_prize_ids: items.map((i) => i.id), shipping: needsShipping ? ship : null, save_address: save, message: message || null, idempotency_key: key.current },
       });
-      toast("景品交換の申請を受け付けました。");
+      toast("発送の申請を受け付けました。");
       router.replace(`/exchanges/${res.id}`);
     } catch (e) {
       if ((e as ApiError).code === "phone_not_verified") {
@@ -82,7 +82,7 @@ function Content() {
   if (items.length === 0)
     return (
       <div className="mx-auto max-w-xl px-4 py-16">
-        <Alert kind="warn">交換できる景品が選択されていません。獲得した景品一覧から選択してください。</Alert>
+        <Alert kind="warn">発送できる景品が選択されていません。獲得した景品一覧から選択してください。</Alert>
         <Button className="mt-4" href="/prizes">獲得した景品へ</Button>
       </div>
     );
@@ -91,10 +91,10 @@ function Content() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-      <PageTitle en="EXCHANGE" title="景品交換の申請" sub={step === "form" ? "お届け先を入力してください。" : "内容をご確認のうえ、申請してください。"} />
+      <PageTitle en="EXCHANGE" title="景品の発送申請" sub={step === "form" ? "お届け先を入力してください。" : "内容をご確認のうえ、申請してください。"} />
       <div className="grid gap-6 lg:grid-cols-[1fr_1.4fr]">
         <Panel>
-          <h2 className="mb-3 font-serif font-bold text-gold-light">交換する景品（{items.length}点）</h2>
+          <h2 className="mb-3 font-serif font-bold text-gold-light">発送する景品（{items.length}点）</h2>
           <div className="grid grid-cols-3 gap-2">
             {items.map((p) => (
               <PrizeCard key={p.id} prize={p.prize} size="xs" />
@@ -187,7 +187,7 @@ function Content() {
               {message && <p className="text-sm text-moon/70">メッセージ：{message}</p>}
               <div className="grid grid-cols-2 gap-3">
                 <Button variant="subtle" onClick={() => setStep("form")}>修正する</Button>
-                <Button onClick={submit} loading={loading}>景品交換を申請する</Button>
+                <Button onClick={submit} loading={loading}>発送を申請する</Button>
               </div>
             </div>
           )}

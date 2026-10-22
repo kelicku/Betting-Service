@@ -54,7 +54,7 @@ function LoginForm() {
           <Link href="/forgot-password" className="text-moon/60 hover:text-gold-light">
             パスワードをお忘れの方
           </Link>
-          <Link href="/register" className="text-gold-light hover:underline">
+          <Link href={next !== "/mypage" ? `/register?next=${encodeURIComponent(next)}` : "/register"} className="text-gold-light hover:underline">
             新規登録
           </Link>
         </div>

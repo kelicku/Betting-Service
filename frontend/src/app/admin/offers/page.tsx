@@ -12,7 +12,7 @@ import { useMe } from "@/lib/hooks";
 
 type O = { id: number; provider: string; kind: "ad" | "survey" | "video"; external_id: string | null; title: string; description: string; conditions: string; image_url: string | null; url_template: string; reward_tickets: number; estimated_minutes: number | null; per_user_limit: number; is_active: boolean; is_test: boolean; starts_at: string | null; ends_at: string | null; sort_order: number; conversions: number; tickets_paid: number };
 type M = { id: number; code: string; kind: "campaign" | "achievement"; title: string; description: string; reward_tickets: number; condition_type: string; condition_value: number; starts_at: string | null; ends_at: string | null; is_active: boolean };
-const COND: Record<string, string> = { none: "参加のみ", total_draws: "累計抽選回数", email_verified: "メール確認", first_exchange: "初回交換申請", login_days: "ログインボーナス日数" };
+const COND: Record<string, string> = { none: "参加のみ", total_draws: "累計抽選回数", email_verified: "メール確認", first_exchange: "初回の発送申請", login_days: "ログインボーナス日数" };
 
 function OffersTab({ isAdmin }: { isAdmin: boolean }) {
   const { data, mutate } = useSWR<{ providers: string[]; items: O[] }>("/api/admin/offers", fetcher);

@@ -66,11 +66,11 @@ async def create_request(
     message: str | None,
 ) -> tuple[ExchangeRequest, bool]:
     if not user_prize_ids:
-        raise AppError("no_items", "交換する景品を選択してください。")
+        raise AppError("no_items", "発送する景品を選択してください。")
     if len(set(user_prize_ids)) != len(user_prize_ids) or len(user_prize_ids) > 50:
         raise AppError("invalid_items", "景品の指定が正しくありません。")
     if await settings_store.get(db, "exchange_requires_verified_email") and not user.email_verified_at:
-        raise AppError("email_not_verified", "景品交換にはメールアドレスの確認が必要です。", 403)
+        raise AppError("email_not_verified", "発送の申請にはメールアドレスの確認が必要です。", 403)
 
     existing = await db.scalar(
         select(ExchangeRequest).where(
@@ -105,10 +105,10 @@ async def create_request(
     for up, prize in rows:
         if up.status != UserPrizeStatus.owned:
             raise AppError(
-                "already_requested", f"「{prize.name}」は既に交換申請済みです。", status_code=409
+                "already_requested", f"「{prize.name}」は既に発送を申請済みです。", status_code=409
             )
         if not prize.is_exchangeable:
-            raise AppError("not_exchangeable", f"「{prize.name}」は交換対象外の景品です。")
+            raise AppError("not_exchangeable", f"「{prize.name}」は発送の対象外の景品です。")
 
     needs_shipping = any(p.requires_shipping for _, p in rows)
     encrypted = None
@@ -144,8 +144,8 @@ async def create_request(
         Notification(
             user_id=user.id,
             kind="exchange",
-            title="景品交換の申請を受け付けました",
-            body=f"申請番号 #{req.id}（{len(rows)}点）。処理状況は交換履歴からご確認いただけます。",
+            title="景品の発送申請を受け付けました",
+            body=f"申請番号 #{req.id}（{len(rows)}点）。処理状況はマイページの「景品の発送申請」からご確認いただけます。",
             link=f"/exchanges/{req.id}",
         )
     )
@@ -180,7 +180,7 @@ async def _lock_request(db: AsyncSession, req_id: int, user_id: int | None = Non
         q = q.where(ExchangeRequest.user_id == user_id)
     req = (await db.execute(q.execution_options(populate_existing=True))).scalar_one_or_none()
     if req is None:
-        raise NotFound("交換申請が見つかりません。")
+        raise NotFound("発送申請が見つかりません。")
     return req
 
 
@@ -238,11 +238,11 @@ async def transition(
         body += f"\n配送業者：{req.carrier or '-'}　お問い合わせ番号：{req.tracking_number}"
     if to == ExchangeStatus.rejected and note:
         body += f"\n理由：{note}"
-    db.add(Notification(user_id=req.user_id, kind="exchange", title="景品交換の状況が更新されました", body=body, link=f"/exchanges/{req.id}"))
+    db.add(Notification(user_id=req.user_id, kind="exchange", title="景品の発送申請の状況が更新されました", body=body, link=f"/exchanges/{req.id}"))
     owner = await db.get(User, req.user_id)
     await db.commit()
     if owner:
-        await mail.send_mail(owner.email, "【わくわくガチャ】景品交換の状況が更新されました", f"{owner.display_name} 様\n\n{body}")
+        await mail.send_mail(owner.email, "【わくわくガチャ】景品の発送申請の状況が更新されました", f"{owner.display_name} 様\n\n{body}")
     return req
 
 
@@ -260,7 +260,7 @@ async def load_request(db: AsyncSession, req_id: int, user_id: int | None = None
         q = q.where(ExchangeRequest.user_id == user_id)
     req = (await db.execute(q)).scalar_one_or_none()
     if req is None:
-        raise NotFound("交換申請が見つかりません。")
+        raise NotFound("発送申請が見つかりません。")
     return req
 
 

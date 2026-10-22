@@ -4,7 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { refreshMe, useMe } from "@/lib/hooks";
 import { TicketIcon, cx } from "./ui";
@@ -134,6 +134,20 @@ export function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
   useEffect(() => setMenu(false), [path]);
+  const menuRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!menu) return;
+    const onDown = (e: PointerEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenu(false);
+    };
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setMenu(false);
+    document.addEventListener("pointerdown", onDown);
+    document.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("pointerdown", onDown);
+      document.removeEventListener("keydown", onKey);
+    };
+  }, [menu]);
 
   const logout = async () => {
     await api("/auth/logout", { method: "POST" }).catch(() => {});
@@ -141,8 +155,9 @@ export function Header() {
     router.push("/");
   };
   const isActive = (href: string) => (href === "/" ? path === "/" : path.startsWith(href));
+  // マイページは上のメインメニュー（スマートフォン）・ヘッダー（PC）にあるため、ここには載せない
   const account: [string, string][] = me
-    ? [["/mypage", "マイページ"], ["/notifications", "通知"], ["/earn", "チケットを獲得する"], ["/tickets", "チケットの履歴"], ["/points", "ポイントの履歴"], ["/shop/orders", "ポイント交換の履歴"], ["/draws", "抽選履歴"], ["/prizes", "獲得した景品"], ["/exchanges", "景品の発送申請"], ["/invite", "友達紹介"], ["/settings", "プロフィール設定"]]
+    ? [["/notifications", "通知"], ["/earn", "チケットを獲得する"], ["/tickets", "チケットの履歴"], ["/points", "ポイントの履歴"], ["/shop/orders", "ポイント交換の履歴"], ["/draws", "抽選履歴"], ["/prizes", "獲得した景品"], ["/exchanges", "景品の発送申請"], ["/invite", "友達紹介"], ["/settings", "プロフィール設定"]]
     : [["/login", "ログイン"], ["/register", "新規登録"], ["/earn", "チケットを獲得する"], ["/faq", "よくある質問"]];
 
   return (
@@ -199,7 +214,7 @@ export function Header() {
               </Link>
             </>
           )}
-          <div className="relative">
+          <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenu((v) => !v)}
               className="flex h-10 w-10 items-center sm:h-11 sm:w-11 justify-center rounded-full text-[#1c2560] transition hover:bg-[#1c2560]/5"
@@ -218,7 +233,7 @@ export function Header() {
                   initial={{ opacity: 0, y: -6, scale: 0.98 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6 }}
-                  className="absolute right-0 mt-2 w-60 overflow-hidden rounded-2xl border border-[#e7e9f7] bg-white p-1.5 text-[#1c2560] shadow-[0_18px_40px_-12px_rgba(30,40,110,0.4)]"
+                  className="menu-panel absolute right-0 mt-2 w-60 overflow-y-auto overscroll-contain rounded-2xl border border-[#e7e9f7] bg-white p-1.5 text-[#1c2560] shadow-[0_18px_40px_-12px_rgba(30,40,110,0.4)]"
                 >
                   {me && <p className="truncate px-3 pb-1 pt-2 text-xs text-[#6a6f99]">{me.display_name} さん</p>}
                   <div className="xl:hidden">
@@ -266,7 +281,7 @@ export function MobileNav() {
     { href: "/", label: "ホーム", icon: "M3 11l9-7 9 7v9a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1z" },
     { href: "/earn", label: "獲得", icon: "M12 3v18M5 10l7-7 7 7" },
     { href: "/gacha", label: "ガチャ", icon: "", center: true },
-    { href: "/shop", label: "交換", icon: "M4 8h16v12H4zM2 8h20V5H2zM12 5v15M12 5c-2-3-6-3-6 0M12 5c2-3 6-3 6 0" },
+    { href: "/shop", label: "ポイント交換", icon: "M4 8h16v12H4zM2 8h20V5H2zM12 5v15M12 5c-2-3-6-3-6 0M12 5c2-3 6-3 6 0" },
     { href: me ? "/mypage" : "/login", label: me ? "マイページ" : "ログイン", icon: "M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0" },
   ];
   return (

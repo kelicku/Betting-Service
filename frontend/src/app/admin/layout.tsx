@@ -19,7 +19,7 @@ const NAV: { href: string; label: string; adminOnly?: boolean }[] = [
   { href: "/admin/offers", label: "広告・アンケート管理" },
   { href: "/admin/exchanges", label: "景品の発送申請" },
   { href: "/admin/shop/orders", label: "ポイント交換の申請" },
-  { href: "/admin/shop", label: "交換景品・ギフトコード" },
+  { href: "/admin/shop", label: "ポイント交換の景品・ギフトコード" },
   { href: "/admin/referrals", label: "友達紹介" },
   { href: "/admin/coupons", label: "クーポンコード" },
   { href: "/admin/messages", label: "メッセージ配信" },

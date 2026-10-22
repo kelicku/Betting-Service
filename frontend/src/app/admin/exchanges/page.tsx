@@ -26,7 +26,7 @@ function Content() {
   const by = (l.data?.by_status ?? {}) as Record<string, number>;
   return (
     <div>
-      <PageTitle en="EXCHANGES" title="交換申請管理" sub="配送先（個人情報）の閲覧は操作履歴に記録されます。" />
+      <PageTitle en="EXCHANGES" title="発送申請の管理" sub="配送先（個人情報）の閲覧は操作履歴に記録されます。" />
       <Tabs
         value={l.filters.status}
         onChange={(v) => l.set("status", v)}

@@ -135,13 +135,34 @@ await step("公開ページがすべて表示される（未ログイン）", as
 await step("トップページ：キャッチコピー・ピックアップガチャ（1回 1枚）・景品・交換先", async () => {
   await guest.goto(BASE + "/", { waitUntil: "load" });
   const t = await guest.locator("main").innerText();
-  for (const w of ["遊んで", "ピックアップガチャ", "豪華な景品ラインナップ", "遊び方", "人気の交換先"]) assert(t.includes(w), `「${w}」がない`);
+  for (const w of ["遊んで", "ピックアップガチャ", "豪華な景品ラインナップ", "遊び方", "人気のポイント交換先", "新規会員登録で"]) assert(t.includes(w), `「${w}」がない`);
   assert(/1回\s*1\s*枚/.test(t), "ガチャの価格が「1回 1枚」になっていない");
 });
-await step("未ログインでガチャを引くとログイン画面へ", async () => {
-  await guest.goto(BASE + "/gacha/digital-gift", { waitUntil: "load" });
-  await guest.getByRole("button", { name: /^ガチャを引く/ }).first().click();
-  await guest.waitForURL(/\/login\?next=/, { timeout: 10000 });
+await step("未ログインでガチャを引く → 新規登録画面（特典を表示）→ 登録・メール確認のあと同じガチャへ戻れる", async () => {
+  const p = await newUserPage(browser);
+  await p.goto(BASE + "/gacha/digital-gift", { waitUntil: "load" });
+  await p.waitForLoadState("networkidle").catch(() => {});
+  await p.getByRole("button", { name: /^ガチャを引く/ }).first().click();
+  await p.waitForURL(/\/register\?next=%2Fgacha%2Fdigital-gift/, { timeout: 10000 });
+  await p.getByText("ガチャを引くには、無料の会員登録が必要です。").waitFor({ timeout: 10000 });
+  const banner = (await p.locator(".bonus-banner").innerText()).replace(/\s+/g, "");
+  assert(banner.includes("1,000pt") && banner.includes("10枚"), `特典の表示が想定と違う（${banner}）`);
+  const loginHref = await p.locator("main form").getByRole("link", { name: "ログイン", exact: true }).getAttribute("href");
+  assert(loginHref === "/login?next=%2Fgacha%2Fdigital-gift", `ログインへのリンクに戻り先がない（${loginHref}）`);
+  const email = `qa-g-${RUN}@example.com`;
+  await p.waitForLoadState("networkidle").catch(() => {});
+  const form = p.locator("main form");
+  await form.getByLabel("ニックネーム").fill("QAゲスト");
+  await form.getByLabel("メールアドレス").fill(email);
+  await form.getByLabel("パスワード").fill("qaPass123");
+  await form.locator('input[type="checkbox"]').check();
+  await form.getByRole("button", { name: "登録して確認メールを受け取る" }).click();
+  await p.getByText(/確認メールを送信しました/).first().waitFor({ timeout: 15000 });
+  await p.goto(await mailLink(email, "verify-email"), { waitUntil: "load" });
+  await p.getByText("さん、ようこそ").waitFor({ timeout: 15000 });
+  const back = await p.getByRole("link", { name: "さっそくガチャを引く" }).getAttribute("href");
+  assert(back === "/gacha/digital-gift", `確認後の戻り先が違う（${back}）`);
+  await p.context().close();
 });
 
 // ── 2. 会員登録・メール確認・ログイン・パスワード再設定 ────────────

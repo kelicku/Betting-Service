@@ -154,12 +154,12 @@ async def seed() -> None:
 
 SHOWCASE_PRIZES = {
     # key: (name, subtitle, rarity, image, featured_order, description, requires_shipping)
-    # 画像は汎用のイラスト（各社のロゴ・商品画像は許諾を得てから管理画面で差し替える）
-    "console": ("Nintendo Switch", "（有機ELモデル）", "SSR", "/images/waku/prize-console.webp", 1, "人気の家庭用ゲーム機。", True),
-    "phone": ("iPhone 15", "（128GB）", "SSR", "/images/waku/prize-phone.webp", 2, "最新のスマートフォン。", True),
-    "amazon": ("Amazonギフトカード", "5,000円分", "SR", "/images/waku/card-navy.webp", 3, "ギフトコードをメールでお届けします。", False),
-    "apple": ("Apple Gift Card", "5,000円分", "SR", "/images/waku/card-blue.webp", 4, "ギフトコードをメールでお届けします。", False),
-    "googleplay": ("Google Playギフトコード", "5,000円分", "SR", "/images/waku/card-green.webp", 5, "ギフトコードをメールでお届けします。", False),
+    # 名前・画像は汎用（各社の商品名・ロゴは表示ルールが厳しいため使わない。実際の景品は管理画面で登録する）
+    "console": ("人気ゲーム機", "（最新モデル）", "SSR", "/images/waku/prize-console.webp", 1, "人気の家庭用ゲーム機。", True),
+    "phone": ("最新スマートフォン", "（128GB）", "SSR", "/images/waku/prize-phone.webp", 2, "最新のスマートフォン。", True),
+    "amazon": ("ショッピングギフト", "5,000円分", "SR", "/images/waku/card-navy.webp", 3, "ギフトコードをメールでお届けします。", False),
+    "apple": ("アプリ・音楽ギフト", "5,000円分", "SR", "/images/waku/card-blue.webp", 4, "ギフトコードをメールでお届けします。", False),
+    "googleplay": ("ゲーム・アプリギフト", "5,000円分", "SR", "/images/waku/card-green.webp", 5, "ギフトコードをメールでお届けします。", False),
     "digico": ("デジコ", "5,000円分", "SR", "/images/waku/card-coin.webp", 6, "ギフトコードをメールでお届けします。", False),
 }
 
@@ -187,10 +187,10 @@ REWARD_SETTINGS = {
 SHOP_ITEMS = [
     ("デジコ 500円分", "デジコ", "digital_code", 5000, 500, "/images/waku/card-coin.webp", None, None),
     ("デジコ 1,000円分", "デジコ", "digital_code", 10000, 1000, "/images/waku/card-coin.webp", None, None),
-    ("Amazonギフトカード 1,000円分", "Amazon", "digital_code", 10000, 1000, "/images/waku/card-navy.webp", None, None),
-    ("Apple Gift Card 1,000円分", "Apple", "digital_code", 10000, 1000, "/images/waku/card-blue.webp", None, None),
-    ("Google Play ギフトコード 1,000円分", "Google Play", "digital_code", 10000, 1000, "/images/waku/card-green.webp", None, None),
-    ("Nintendo Switch（有機ELモデル）", "", "shipping", 400000, 37980, "/images/waku/prize-console.webp", 3, 1),
+    ("ショッピングギフト 1,000円分", "ショッピング", "digital_code", 10000, 1000, "/images/waku/card-navy.webp", None, None),
+    ("アプリ・音楽ギフト 1,000円分", "アプリ・音楽", "digital_code", 10000, 1000, "/images/waku/card-blue.webp", None, None),
+    ("ゲーム・アプリギフト 1,000円分", "ゲーム・アプリ", "digital_code", 10000, 1000, "/images/waku/card-green.webp", None, None),
+    ("人気ゲーム機（最新モデル）", "", "shipping", 400000, 37980, "/images/waku/prize-console.webp", 3, 1),
 ]
 DEMO_TICKETS = 30
 DEMO_POINTS = 12340
@@ -309,7 +309,7 @@ async def showcase() -> None:
                 a.is_published = False
         news = [
             ("info", "わくわくガチャをオープンしました！", "遊んで貯めて、好きなギフトに交換！ガチャで人気のデジタルギフトや豪華景品が当たります。", 6),
-            ("new_gacha", "「デジタルギフトガチャ」が登場しました", "人気のデジタルギフトが当たるガチャです。1回200ptで引けます。", 3),
+            ("new_gacha", "「デジタルギフトガチャ」が登場しました", "人気のデジタルギフトが当たるガチャです。チケット1枚で引けます。", 3),
             ("campaign", "新規会員登録で1,000ptプレゼント！", "メールアドレスの確認が完了すると、1,000ptをお贈りします。", 1),
             ("maintenance", "システムメンテナンスのお知らせ", "サービス向上のため、メンテナンスを実施する場合があります。日時は決まり次第お知らせします。", 0),
         ]

@@ -12,7 +12,6 @@ import { useRef } from "react";
 import { OutlineText } from "@/components/SiteChrome";
 import { TicketIcon, cx } from "@/components/ui";
 import { useMe } from "@/lib/hooks";
-import { AmazonLogo, AppleLogo, DigicoLogo, EshopLogo, GooglePlayLogo, PlayStationStoreLogo } from "./BrandLogos";
 import type { GachaSummary, Rarity } from "@/lib/types";
 
 const fmt = (n: number) => n.toLocaleString("ja-JP");
@@ -46,28 +45,40 @@ export function PromoCards({ signupTickets, signupPoints }: { signupTickets: num
   const { me } = useMe();
   return (
     <section className="relative z-10 mx-auto max-w-[1316px] px-4 lg:px-0" aria-label="キャンペーン">
-      <div className="grid gap-4 md:grid-cols-3 lg:gap-[22px]">
+      <div className="mx-auto grid max-w-[560px] gap-5 lg:max-w-none lg:grid-cols-3 lg:gap-[22px]">
         <motion.div {...reveal}>
-          <Link href={me ? "/earn" : "/register"} className="promo-card group flex h-[150px] items-center gap-3 bg-[linear-gradient(110deg,#ffe0ec,#fff0f5_55%,#ffe6f0)] px-4 lg:h-[165px] lg:gap-3 lg:pl-5 lg:pr-4">
-            <Image src="/images/waku/promo-gift.webp" alt="" width={113} height={118} className="h-[100px] w-auto shrink-0 transition-transform group-hover:-rotate-6 group-hover:scale-105 lg:h-[118px]" />
-            <div className="flex-1 font-round font-black leading-tight text-[#ff2f6e]">
-              <p className="text-[1.05rem] lg:text-[1.45rem]">新規会員登録で</p>
+          <Link href={me ? "/earn" : "/register"} className="promo-card promo-bonus group flex h-[150px] items-center gap-3 bg-[linear-gradient(110deg,#ffd3e4,#fff0f5_55%,#ffdcea)] px-4 lg:h-[165px] lg:gap-3 lg:pl-5 lg:pr-4">
+            {/* 「登録無料」のリボン（カードの上にはみ出す） */}
+            <span className="bonus-ribbon absolute -top-3 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full px-4 py-0.5 font-round text-[0.8rem] font-black tracking-[0.12em] text-white lg:text-[0.9rem]">
+              ＼ 登録無料 ／
+            </span>
+            <Image src="/images/waku/promo-gift.webp" alt="" width={113} height={118} className="h-[96px] w-auto shrink-0 transition-transform group-hover:-rotate-6 group-hover:scale-105 lg:h-[112px]" />
+            <div className="relative flex-1 font-round font-black leading-tight text-[#ff2f6e]">
+              <p className="text-[1rem] lg:text-[1.35rem]">新規会員登録で</p>
               {/* ポイントの特典があればポイント（参考デザインの表示）、なければチケットを表示 */}
-              <p className="text-[2rem] leading-[1.15] tracking-[-0.02em] lg:text-[2.7rem]">
-                {signupPoints > 0 ? (
-                  <>
-                    {fmt(signupPoints)}
-                    <span className="ml-0.5 text-[1.4rem] lg:text-[1.9rem]">pt</span>
-                  </>
+              <p className="bonus-amount relative -my-0.5 whitespace-nowrap leading-none tracking-[-0.03em]">
+                <span className="waku-sparkle -left-2 top-0 h-4 w-4" aria-hidden />
+                <span className="waku-sparkle right-1 -top-1 h-5 w-5 [animation-delay:1.1s]" aria-hidden />
+                {signupPoints > 0 || signupTickets > 0 ? (
+                  <OutlineText stroke={8} className="bonus-outline">
+                    {signupPoints > 0 ? (
+                      <>
+                        <span className="grad-text grad-sun text-[2.75rem] lg:text-[3.6rem]">{fmt(signupPoints)}</span>
+                        <span className="grad-text grad-pink ml-0.5 text-[1.6rem] lg:text-[2.1rem]">pt</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="grad-text grad-pink text-[1.3rem] lg:text-[1.7rem]">チケット</span>
+                        <span className="grad-text grad-sun text-[2.75rem] lg:text-[3.6rem]">{fmt(signupTickets)}</span>
+                        <span className="grad-text grad-pink ml-0.5 text-[1.6rem] lg:text-[2.1rem]">枚</span>
+                      </>
+                    )}
+                  </OutlineText>
                 ) : (
-                  <>
-                    <span className="text-[1.3rem] lg:text-[1.7rem]">チケット</span>
-                    {signupTickets > 0 ? fmt(signupTickets) : "—"}
-                    <span className="ml-0.5 text-[1.4rem] lg:text-[1.9rem]">枚</span>
-                  </>
+                  <span className="text-[2rem]">特典あり</span>
                 )}
               </p>
-              <p className="text-[1.05rem] lg:text-[1.45rem]">プレゼント！</p>
+              <p className="text-[1rem] lg:text-[1.35rem]">プレゼント！</p>
             </div>
             <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(180deg,#ff5d8f,#f0215e)] text-white shadow-[0_4px_10px_-3px_rgba(240,33,94,0.7)] transition-transform group-hover:translate-x-1 lg:h-[3.1rem] lg:w-[3.1rem]">
               <Chevron className="h-6 w-6" />
@@ -98,7 +109,7 @@ export function PromoCards({ signupTickets, signupPoints }: { signupTickets: num
               <p className="whitespace-nowrap text-[1.05rem] lg:text-[1.38rem]">貯めたポイントで</p>
               <p className="whitespace-nowrap text-[1.05rem] lg:text-[1.38rem]">デジタルギフトと交換！</p>
               <span className="mt-2 inline-flex items-center gap-2 rounded-full bg-[linear-gradient(180deg,#ffb23f,#f08a12)] px-6 py-1 text-[0.8rem] font-bold text-white shadow-[0_3px_8px_-3px_rgba(240,138,18,0.8)] lg:px-12 lg:py-1.5 lg:text-[1rem]">
-                交換先をみる
+                ポイント交換へ
                 <Chevron className="h-3.5 w-3.5" />
               </span>
             </div>
@@ -260,7 +271,7 @@ const STEPS = [
   { n: 1, title: "チケットを獲得", text: ["広告視聴やミッションで", "ガチャチケットをゲット！"], icon: "/images/waku/howto-ticket.webp", bg: "bg-[linear-gradient(135deg,#ffe3f0,#fff0f7)]", num: "bg-[linear-gradient(180deg,#ff6f9f,#f0215e)]", color: "text-[#f0215e]" },
   { n: 2, title: "ガチャを引く", text: ["チケットを使って", "ガチャを引こう！"], icon: "/images/waku/howto-gacha.webp", bg: "bg-[linear-gradient(135deg,#ddefff,#eef7ff)]", num: "bg-[linear-gradient(180deg,#4fb2ff,#1d6fe0)]", color: "text-[#1d6fe0]" },
   { n: 3, title: "ポイントを獲得", text: ["ガチャからポイントが", "出るよ！"], icon: "/images/waku/howto-coins.webp", bg: "bg-[linear-gradient(135deg,#e2f6df,#f0fbee)]", num: "bg-[linear-gradient(180deg,#5fd06a,#22a23a)]", color: "text-[#1f9a36]" },
-  { n: 4, title: "ギフトと交換", text: ["貯めたポイントで", "好きなギフトと交換！"], icon: "/images/waku/howto-gift.webp", bg: "bg-[linear-gradient(135deg,#ffeedd,#fff6ec)]", num: "bg-[linear-gradient(180deg,#ff9c4a,#f0641a)]", color: "text-[#f0541a]" },
+  { n: 4, title: "ポイント交換", text: ["貯めたポイントで", "好きなギフトと交換！"], icon: "/images/waku/howto-gift.webp", bg: "bg-[linear-gradient(135deg,#ffeedd,#fff6ec)]", num: "bg-[linear-gradient(180deg,#ff9c4a,#f0641a)]", color: "text-[#f0541a]" },
 ];
 
 function Flourish() {
@@ -310,41 +321,46 @@ export function HowToPlay() {
   );
 }
 
-/* ---------------- 人気の交換先 ---------------- */
+/* ---------------- 人気のポイント交換先 ---------------- */
 
-// 表示用の交換先（参考画像のロゴを SVG で再現。各社のロゴは商標のため、公開前に許諾を得ること）。実際に用意する景品に合わせて変更する
-const BRANDS: { name: string; logo: React.ReactNode; cls: string; grow: number }[] = [
-  { name: "Amazonギフトカード", logo: <AmazonLogo />, cls: "bg-[#131a22]", grow: 147 },
-  { name: "Apple Gift Card", logo: <AppleLogo />, cls: "bg-[linear-gradient(135deg,#2b7cf7,#4f8dff_60%,#6a8cff)]", grow: 108 },
-  { name: "Google Play ギフトコード", logo: <GooglePlayLogo />, cls: "bg-white ring-1 ring-[#e6dcf5]", grow: 116 },
-  { name: "デジコ", logo: <DigicoLogo />, cls: "bg-white ring-1 ring-[#e6dcf5]", grow: 168 },
-  { name: "Nintendo eShop", logo: <EshopLogo />, cls: "bg-[#e60012]", grow: 160 },
-  { name: "PlayStation Store", logo: <PlayStationStoreLogo />, cls: "bg-[linear-gradient(180deg,#1166e0,#0a4fc4)]", grow: 160 },
+// 特定の会社のロゴ・商品名は使わず、ギフトの種類をイラストで表示する（各社の表示ルールに配慮）
+const GIFT_KINDS: { name: string; icon: string; tile: string; ink: string }[] = [
+  { name: "ショッピング", icon: "M6 8h12l-1 12H7zM9 8V6.5a3 3 0 016 0V8", tile: "bg-[linear-gradient(135deg,#ffe3ef,#ffc7dc)]", ink: "text-[#f0215e]" },
+  { name: "ゲーム", icon: "M7 9h10a4 4 0 014 4v1.5a2.5 2.5 0 01-4.6 1.4L15 14H9l-1.4 1.9A2.5 2.5 0 013 14.5V13a4 4 0 014-4zM8 11.2v2.6M6.7 12.5h2.6M15.5 12h.01M17.5 13.5h.01", tile: "bg-[linear-gradient(135deg,#e2ecff,#c6d8ff)]", ink: "text-[#2a5be0]" },
+  { name: "アプリ", icon: "M5 5h5v5H5zM14 5h5v5h-5zM5 14h5v5H5zM14 14h5v5h-5z", tile: "bg-[linear-gradient(135deg,#dff7ea,#bdeed5)]", ink: "text-[#12a05c]" },
+  { name: "音楽・動画", icon: "M4 6h16v12H4zM10 9.5v5l4.5-2.5z", tile: "bg-[linear-gradient(135deg,#efe4ff,#dccaff)]", ink: "text-[#7a3fe0]" },
+  { name: "電子マネー", icon: "M3 7h18v10H3zM3 10.5h18M6.5 14h4", tile: "bg-[linear-gradient(135deg,#fff3d6,#ffe1a3)]", ink: "text-[#e08a00]" },
+  { name: "選べるギフト", icon: "M4 10h16v10H4zM3 7h18v3H3zM12 7v13M12 7c-1.6-3-5.5-3-5.5-.6 0 1.2 1.6.6 5.5.6zM12 7c1.6-3 5.5-3 5.5-.6 0 1.2-1.6.6-5.5.6", tile: "bg-[linear-gradient(135deg,#ffe6dc,#ffcbb5)]", ink: "text-[#f0541a]" },
 ];
 
 export function PopularExchange() {
   return (
     <section className="relative mx-auto mt-8 max-w-[1316px] px-4 pb-10 lg:mt-[12px] lg:px-0 lg:pb-[22px]" aria-labelledby="exchange-title">
-      <motion.div {...reveal} className="exchange-panel relative px-4 pb-5 pt-4 lg:h-[241px] lg:pb-0 lg:pl-[243px] lg:pr-[20px] lg:pt-[20px]">
+      <motion.div {...reveal} className="exchange-panel relative px-4 pb-5 pt-4 lg:min-h-[241px] lg:pb-[20px] lg:pl-[243px] lg:pr-[20px] lg:pt-[20px]">
         <Image width={246} height={274} src="/images/waku/footer-cat.webp" alt="" className="h-auto waku-float pointer-events-none absolute -bottom-6 -left-3 hidden w-[246px] lg:block" />
         <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
           <h2 id="exchange-title" className="flex items-center gap-1 font-round text-[1.6rem] font-black text-[#ff2f6e] lg:text-[2.35rem]">
             <svg viewBox="0 0 24 24" className="h-7 w-7 shrink-0 lg:h-9 lg:w-9" aria-hidden>
               <path d="M12 1.5c.8 5.6 3.4 8.6 10 10.5-6.6 1.9-9.2 4.9-10 10.5-.8-5.6-3.4-8.6-10-10.5 6.6-1.9 9.2-4.9 10-10.5z" fill="#ffd34a" stroke="#f3a712" strokeWidth=".8" />
             </svg>
-            人気の交換先
+            人気のポイント交換先
           </h2>
-          <p className="font-round text-sm font-bold text-[#2a2f5c] lg:text-[1.05rem]">貯めたポイントを、好きなデジタルギフトに交換できます！</p>
+          <p className="font-round text-sm font-bold text-[#2a2f5c] lg:text-[1.05rem]">いろいろなデジタルギフトと交換できます！</p>
           <Link href="/shop" className="cta-pink ml-auto flex h-11 items-center gap-1 rounded-full px-6 font-round text-sm font-bold text-white transition hover:brightness-110 lg:h-[48px] lg:w-[260px] lg:justify-center lg:text-[1.2rem]">
-            交換先一覧を見る
+            ポイント交換を見る
             <Chevron className="h-5 w-5" />
           </Link>
         </div>
-        <ul className="mt-4 grid grid-cols-3 gap-2.5 sm:grid-cols-6 lg:mt-[18px] lg:flex lg:gap-[15px]">
-          {BRANDS.map((b) => (
-            <li key={b.name} style={{ flexGrow: b.grow, flexBasis: 0 }}>
-              <Link href="/shop" className={cx("brand-tile flex h-[72px] items-center justify-center px-2 lg:h-[112px]", b.cls)} aria-label={`${b.name}と交換する`}>
-                {b.logo}
+        <ul className="mt-4 grid grid-cols-3 gap-2.5 sm:grid-cols-6 lg:mt-[18px] lg:gap-[15px]">
+          {GIFT_KINDS.map((k) => (
+            <li key={k.name}>
+              <Link href="/shop" className={cx("brand-tile flex h-[78px] flex-col items-center justify-center gap-1 px-1 lg:h-[112px] lg:gap-2", k.tile)} aria-label={`${k.name}のギフトとポイント交換する`}>
+                <span className={cx("flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-[0_3px_8px_-4px_rgba(40,40,90,0.4)] lg:h-[3.4rem] lg:w-[3.4rem]", k.ink)}>
+                  <svg viewBox="0 0 24 24" className="h-5 w-5 lg:h-8 lg:w-8" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <path d={k.icon} />
+                  </svg>
+                </span>
+                <span className={cx("whitespace-nowrap font-round text-[0.78rem] font-black lg:text-[1.05rem]", k.ink)}>{k.name}</span>
               </Link>
             </li>
           ))}

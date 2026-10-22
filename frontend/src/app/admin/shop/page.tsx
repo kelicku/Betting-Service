@@ -81,7 +81,7 @@ export default function AdminShop() {
     <div>
       <PageTitle
         en="POINT EXCHANGE"
-        title="交換景品・ギフトコード"
+        title="ポイント交換の景品・ギフトコード"
         sub="会員がポイントで交換できる景品です。デジタルギフトは、ギフトコードを登録しておくと交換時にすぐお渡しされます（在庫がない場合は「ポイント交換の申請」から手動でお渡し）。"
         right={isAdmin && <Button onClick={() => setEdit({ ...EMPTY })}>景品を追加</Button>}
       />

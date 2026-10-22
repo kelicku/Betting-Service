@@ -47,7 +47,7 @@ export default function ContactPage() {
                 <option value="account">アカウント・ログインについて</option>
                 <option value="gacha">ガチャについて</option>
                 <option value="tickets">チケット・ポイントについて</option>
-                <option value="exchange">景品交換・配送について</option>
+                <option value="exchange">ポイント交換・景品の発送について</option>
                 <option value="other">その他</option>
               </select>
             </Field>

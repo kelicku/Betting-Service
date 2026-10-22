@@ -41,7 +41,7 @@ function ItemCard({ it, onPick, balance }: { it: ShopItem; onPick: () => void; b
         {it.stock_remaining != null && !it.sold_out && <p className="text-xs text-moon/50">残り {it.stock_remaining.toLocaleString("ja-JP")} 個</p>}
         <div className="mt-auto pt-3">
           <Button size="sm" className="w-full" disabled={disabled} onClick={onPick} variant={short ? "ghost" : "gold"}>
-            {it.limit_reached ? "交換上限に達しました" : it.sold_out ? "在庫切れ" : short ? "ポイントが足りません" : "交換する"}
+            {it.limit_reached ? "上限に達しました" : it.sold_out ? "在庫切れ" : short ? "ポイント不足" : "ポイント交換する"}
           </Button>
         </div>
       </div>
@@ -105,16 +105,16 @@ export default function ShopPage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-      <PageTitle en="POINT EXCHANGE" title="ポイント交換" sub="ガチャで貯めたポイントを、デジタルギフトや景品と交換できます。" right={me && <Button variant="ghost" href="/shop/orders">交換履歴</Button>} />
+      <PageTitle en="POINT EXCHANGE" title="ポイント交換" sub="ガチャで貯めたポイントを、デジタルギフトや景品と交換できます。" right={me && <Button variant="ghost" href="/shop/orders">ポイント交換の履歴</Button>} />
       <Panel strong className="mb-6 flex flex-wrap items-center justify-between gap-4">
         {me ? (
           <div>
-            <p className="text-sm text-moon/60">交換に使えるポイント</p>
+            <p className="text-sm text-moon/60">使えるポイント</p>
             <Points n={me.point_balance} className="mt-1 text-3xl text-gold-light" />
           </div>
         ) : (
           <p className="text-sm text-moon/70">
-            ポイントはガチャで当たります。<Link href="/login?next=/shop" className="font-bold text-gold-light underline">ログイン</Link>すると交換できます。
+            ポイントはガチャで当たります。<Link href="/login?next=/shop" className="font-bold text-gold-light underline">ログイン</Link>するとポイント交換できます。
           </p>
         )}
         <div className="text-sm text-moon/60">
@@ -124,7 +124,7 @@ export default function ShopPage() {
       {!items ? (
         <Spinner />
       ) : items.length === 0 ? (
-        <Empty title="現在交換できる景品はありません" />
+        <Empty title="現在ポイント交換できる景品はありません" />
       ) : (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">
           {items.map((it) => (
@@ -133,7 +133,7 @@ export default function ShopPage() {
         </div>
       )}
       <p className="mt-6 text-xs leading-relaxed text-moon/50">
-        ※ デジタルギフトのコードは、お渡し後の取消・再発行はできません。受付中（コードの準備中・発送前）の申請は、交換履歴から取り消せます（ポイントは返還されます）。
+        ※ デジタルギフトのコードは、お渡し後の取消・再発行はできません。受付中（コードの準備中・発送前）の申請は、ポイント交換の履歴から取り消せます（ポイントは返還されます）。
       </p>
 
       <Modal open={!!pick} onClose={() => !busy && setPick(null)} title="ポイント交換の確認">
@@ -144,12 +144,12 @@ export default function ShopPage() {
               <div>
                 <p className="font-round font-bold">{pick.name}</p>
                 <p className="text-sm text-moon/60">
-                  {pick.point_cost.toLocaleString("ja-JP")}pt を使います（交換後の残高：{((balance ?? 0) - pick.point_cost).toLocaleString("ja-JP")}pt）
+                  {pick.point_cost.toLocaleString("ja-JP")}pt を使います（ポイント交換後の残高：{((balance ?? 0) - pick.point_cost).toLocaleString("ja-JP")}pt）
                 </p>
               </div>
             </div>
             {pick.kind === "digital_code" ? (
-              <Alert kind="info">{pick.instant ? "交換後すぐに、この画面とメールでギフトコードをお渡しします。" : "ギフトコードのご用意ができ次第、お知らせとメールでお渡しします。"}</Alert>
+              <Alert kind="info">{pick.instant ? "ポイント交換のあとすぐに、この画面とメールでギフトコードをお渡しします。" : "ギフトコードのご用意ができ次第、お知らせとメールでお渡しします。"}</Alert>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 <Field label="お名前"><input className="field" value={ship.name} onChange={set("name")} autoComplete="name" /></Field>
@@ -169,17 +169,17 @@ export default function ShopPage() {
                 </label>
               </div>
             )}
-            {me?.sms_required && <Alert kind="info">初めての交換のため、次の画面で電話番号の確認（SMS 認証）をお願いします。</Alert>}
+            {me?.sms_required && <Alert kind="info">初めてのポイント交換のため、次の画面で電話番号の確認（SMS 認証）をお願いします。</Alert>}
             {err && <Alert kind="error">{err}</Alert>}
             <div className="flex justify-end gap-2">
               <Button variant="ghost" onClick={() => setPick(null)} disabled={busy}>やめる</Button>
-              <Button onClick={submit} loading={busy}>交換する</Button>
+              <Button onClick={submit} loading={busy}>ポイント交換する</Button>
             </div>
           </div>
         )}
       </Modal>
 
-      <Modal open={!!done} onClose={() => setDone(null)} title={done?.status === "fulfilled" ? "交換が完了しました" : "交換を受け付けました"}>
+      <Modal open={!!done} onClose={() => setDone(null)} title={done?.status === "fulfilled" ? "ポイント交換が完了しました" : "ポイント交換を受け付けました"}>
         {done && (
           <div className={cx("space-y-4")}>
             <p className="font-round font-bold">{done.item_name}</p>
@@ -191,7 +191,7 @@ export default function ShopPage() {
               </Alert>
             )}
             <div className="flex justify-end gap-2">
-              <Button variant="ghost" href="/shop/orders">交換履歴を見る</Button>
+              <Button variant="ghost" href="/shop/orders">ポイント交換の履歴を見る</Button>
               <Button onClick={() => { setDone(null); toast("引き続きお楽しみください"); }}>閉じる</Button>
             </div>
           </div>

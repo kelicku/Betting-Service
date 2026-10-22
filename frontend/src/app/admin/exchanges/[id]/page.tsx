@@ -62,8 +62,8 @@ export default function AdminExchangeDetail() {
 
   return (
     <div>
-      <nav className="mb-3 text-xs text-moon/50"><Link href="/admin/exchanges" className="hover:text-gold-light">交換申請管理</Link> / #{ex.id}</nav>
-      <PageTitle en={`EXCHANGE #${ex.id}`} title="交換申請の詳細" sub={`申請日時：${fmtDateTime(ex.created_at)}`} right={<StatusPill status={ex.status} label={ex.status_label} />} />
+      <nav className="mb-3 text-xs text-moon/50"><Link href="/admin/exchanges" className="hover:text-gold-light">発送申請の管理</Link> / #{ex.id}</nav>
+      <PageTitle en={`EXCHANGE #${ex.id}`} title="発送申請の詳細" sub={`申請日時：${fmtDateTime(ex.created_at)}`} right={<StatusPill status={ex.status} label={ex.status_label} />} />
       <div className="grid gap-5 lg:grid-cols-[1.3fr_1fr]">
         <div className="space-y-5">
           <Panel>

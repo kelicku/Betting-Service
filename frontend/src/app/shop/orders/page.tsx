@@ -27,10 +27,10 @@ function Content() {
   const [open, setOpen] = useState<string | null>(null);
 
   const cancel = async (o: ShopOrder) => {
-    if (!confirm(`「${o.item_name}」の交換を取り消しますか？ ${o.point_cost.toLocaleString("ja-JP")}pt が返還されます。`)) return;
+    if (!confirm(`「${o.item_name}」のポイント交換を取り消しますか？ ${o.point_cost.toLocaleString("ja-JP")}pt が返還されます。`)) return;
     try {
       await api(`/shop/orders/${o.id}/cancel`, { method: "POST" });
-      toast("交換を取り消しました");
+      toast("ポイント交換を取り消しました");
       await Promise.all([mutate(url), refreshMe()]);
     } catch (e) {
       toast((e as ApiError).message, "error");
@@ -44,7 +44,7 @@ function Content() {
         {!data ? (
           <Spinner />
         ) : data.items.length === 0 ? (
-          <Empty title="交換の履歴はまだありません">ガチャで貯めたポイントで、デジタルギフトと交換できます。</Empty>
+          <Empty title="ポイント交換の履歴はまだありません">ガチャで貯めたポイントで、デジタルギフトと交換できます。</Empty>
         ) : (
           <ul className="divide-y divide-veil/5">
             {data.items.map((o) => (

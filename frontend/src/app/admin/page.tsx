@@ -41,10 +41,10 @@ export default function AdminDashboard() {
         <Stat label="本日の抽選" value={fmtNum(data.pulls_today)} sub={`${data.draws_today}リクエスト`} />
         <Stat label="本日のチケット" value={`+${fmtNum(data.tickets_issued_today)}`} sub={`使用 −${fmtNum(data.tickets_spent_today)}`} />
         <Stat label="流通中チケット" value={fmtNum(data.tickets_outstanding)} sub="全会員の残高合計" />
-        <Stat label="流通中ポイント" value={fmtNum(data.points_outstanding ?? 0)} sub="交換に使える残高の合計" />
+        <Stat label="流通中ポイント" value={fmtNum(data.points_outstanding ?? 0)} sub="ポイント交換に使える残高の合計" />
         <Stat label="ポイント交換（対応待ち）" value={fmtNum(data.shop_orders_pending ?? 0)} sub="ギフトコード・発送の対応待ち" />
         <Link href="/admin/exchanges?status=pending">
-          <Stat label="未対応の交換申請" value={data.exchanges_pending} sub={`対応中 ${data.exchanges_in_progress}件`} accent={data.exchanges_pending > 0} />
+          <Stat label="未対応の発送申請" value={data.exchanges_pending} sub={`対応中 ${data.exchanges_in_progress}件`} accent={data.exchanges_pending > 0} />
         </Link>
         <Stat label="本日の広告・アンケート成果" value={data.conversions_today} sub="テスト成果を除く" />
         <Link href="/admin/settings?tab=contacts">

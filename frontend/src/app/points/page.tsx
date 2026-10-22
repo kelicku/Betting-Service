@@ -40,7 +40,7 @@ function Content() {
           items={[
             { value: "all", label: "すべて" },
             { value: "earn", label: "獲得履歴" },
-            { value: "spend", label: "交換履歴" },
+            { value: "spend", label: "ポイント交換" },
           ]}
         />
         {!data ? (

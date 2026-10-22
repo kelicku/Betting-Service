@@ -22,7 +22,7 @@ const LINKS: [string, string][] = [
   ["/shop", "ポイント交換"],
   ["/invite", "友達紹介"],
   ["/prizes", "獲得した景品"],
-  ["/exchanges", "景品交換履歴"],
+  ["/exchanges", "景品の発送申請"],
   ["/tickets", "チケットの履歴"],
   ["/points", "ポイントの履歴"],
   ["/mypage", "マイページ"],
