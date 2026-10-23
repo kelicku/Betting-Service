@@ -142,3 +142,62 @@ async def test_ipv6_addresses_in_the_same_64_share_the_video_limit(make_client):
         await login_as(c, await create_user())
     assert (await same.post(f"/api/offers/{o.id}/start")).json()["error"]["code"] == "video_ip_daily_limit"
     assert (await other.post(f"/api/offers/{o.id}/start")).status_code == 200
+
+
+async def test_viewing_same_ip_list_is_recorded_in_audit_log(make_client, db_session):
+    from app.models import AdminAuditLog
+
+    admin, u = await create_user(role="admin"), await create_user()
+    ac = await make_client()
+    await login_as(ac, admin)
+    assert (await ac.get(f"/api/admin/users/{u.id}/same-ip")).status_code == 200
+    async with db_session() as db:
+        log = await db.scalar(select(AdminAuditLog).where(AdminAuditLog.action == "user.view_same_ip"))
+        assert log is not None and log.actor_id == admin.id and log.target_id == str(u.id)
+
+
+async def test_old_ip_addresses_are_purged_after_retention(make_client, db_session):
+    from datetime import UTC, datetime, timedelta
+
+    from sqlalchemy import update
+
+    from app.models import UserSession
+    from app.services import privacy
+
+    await set_setting(ip_retention_days=90)
+    old, new = await create_user(), await create_user()
+    for u in (old, new):
+        await login_as(await make_client(), u)
+    async with db_session() as db:
+        long_ago = datetime.now(UTC) - timedelta(days=91)
+        await db.execute(update(User).where(User.id.in_([old.id, new.id])).values(signup_ip="203.0.113.9"))
+        await db.execute(update(User).where(User.id == old.id).values(created_at=long_ago))
+        await db.execute(update(UserSession).where(UserSession.user_id == old.id).values(created_at=long_ago))
+        await db.commit()
+        counts = await privacy.purge_old_ips(db)
+        assert counts["users"] >= 1 and counts["sessions"] >= 1
+        assert await db.scalar(select(User.signup_ip).where(User.id == old.id)) is None
+        assert await db.scalar(select(User.signup_ip).where(User.id == new.id)) == "203.0.113.9"
+        assert await db.scalar(select(UserSession.ip).where(UserSession.user_id == old.id)) is None
+        assert await db.scalar(select(UserSession.ip).where(UserSession.user_id == new.id)) is not None
+        # 会員そのものは残る
+        assert await db.get(User, old.id) is not None
+
+
+async def test_cleanup_test_data_removes_only_qa_data(db_session):
+    from app.cli import cleanup_test_data
+    from app.models import Gacha
+    from tests.conftest import create_gacha
+
+    qa = await create_user(email="qa-a-zz@example.com", balance=5)
+    real = await create_user(email="real-user@example.com")
+    g = await create_gacha()
+    async with db_session() as db:
+        gg = await db.get(Gacha, g.id)
+        gg.slug = "qa-lastone-zz"
+        await db.commit()
+    await cleanup_test_data()
+    async with db_session() as db:
+        assert await db.get(User, qa.id) is None
+        assert await db.get(User, real.id) is not None
+        assert await db.get(Gacha, g.id) is None

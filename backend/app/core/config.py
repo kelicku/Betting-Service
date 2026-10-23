@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     smtp_username: str | None = None
     smtp_password: str | None = None
     smtp_starttls: bool = False
-    mail_from: str = "わくわくガチャ <no-reply@hoshifuru.example>"
+    mail_from: str = "わくわくガチャ <no-reply@wakuwaku.example>"
     ops_notify_email: str | None = None
 
     # SMS（電話番号の確認）。console：送らずにログへ出す（開発用）／memory：テスト用／twilio：Twilio で送信
@@ -64,7 +64,7 @@ class Settings(BaseSettings):
     storage_local_dir: str = "var/uploads"
     storage_public_base_url: str = "/api/media"
     s3_endpoint_url: str | None = None
-    s3_bucket: str = "hoshifuru"
+    s3_bucket: str = "wakuwaku"
     s3_access_key: str | None = None
     s3_secret_key: str | None = None
     s3_region: str = "ap-northeast-1"

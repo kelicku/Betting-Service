@@ -303,7 +303,7 @@ async def reset_password(db: AsyncSession, token: str, new_password: str) -> Non
 # ── デモ用ワンクリックログイン ─────────────────────────────
 
 # お試しアカウントのメールアドレスに使うドメイン（.invalid は実在しないことが保証されたドメイン）
-DEMO_EMAIL_DOMAIN = "guest.hoshifuru.invalid"
+DEMO_EMAIL_DOMAIN = "guest.wakuwaku.invalid"
 
 
 def is_demo_user(user: User) -> bool:

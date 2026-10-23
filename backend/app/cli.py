@@ -3,7 +3,8 @@
   python -m app.cli seed                 開発用の初期データを投入（冪等）
   python -m app.cli showcase             参考デザインに合わせたデモ表示データを登録（seed の後に実行・冪等）
   python -m app.cli create-admin EMAIL   管理者アカウントを作成（パスワードは対話入力または ADMIN_PASSWORD）
-  python -m app.cli purge-pii            保持期間を過ぎた配送先情報を消去（cron で日次実行を推奨）
+  python -m app.cli purge-pii            保持期間を過ぎた配送先情報・IP アドレスを消去（毎日実行。本番の構成では自動）
+  python -m app.cli cleanup-test-data    動作確認スクリプトが作ったテスト用のアカウント・ガチャ・クーポンを削除（開発環境のみ）
   python -m app.cli verify-draws         抽選結果の改ざん検知（HMAC 照合）
   python -m app.cli check-mail TO        メール送信の設定を確認（テストメールを送り、失敗したら原因を表示）
 """
@@ -35,10 +36,10 @@ PRIZES = [
     ("music", "銀河のオルゴール", "R", "星座をめぐる旋律を奏でる、透かし彫りのオルゴール。", True, 2500),
     ("amethyst", "紫晶の王冠", "SR", "アメジストを散りばめた、宮殿の夜会のためのティアラ。", True, 5000),
     ("hourglass", "時の砂時計", "SR", "流れ落ちる砂が星になる、魔法の砂時計。", True, 6000),
-    ("crown", "星降る宝冠", "SSR", "宝物殿の最奥に眠る、千の星を戴く宝冠。", True, 9000),
+    ("crown", "王者の宝冠", "SSR", "宝箱の奥に眠る、千の星を戴く宝冠。", True, 9000),
     ("dragon", "暁竜の宝玉", "SSR", "夜明けの竜が守り続けた、黄金に輝く宝玉。", True, 9500),
-    ("lastone_orb", "星帝の天球儀", "SSR", "ラストワン賞限定。天の運行を映す黄金の天球儀。", True, 10000),
-    ("lastone_key", "宝物殿の鍵", "SSR", "ラストワン賞限定。宝物殿の扉を開くと伝わる黄金の鍵。", True, 8000),
+    ("lastone_orb", "ラストワン限定 スペシャル賞", "SSR", "最後の1口を引いた方だけがもらえる、特別な景品です。", True, 10000),
+    ("lastone_key", "黄金の鍵", "SSR", "ラストワン賞限定。宝箱を開くと伝わる黄金の鍵。", True, 8000),
 ]
 
 
@@ -56,11 +57,11 @@ async def seed() -> None:
         admin = await db.scalar(select(User).where(User.email == "admin@hoshifuru.example"))
         if admin is None:
             admin = User(email="admin@hoshifuru.example", password_hash=hash_password(os.environ.get("SEED_ADMIN_PASSWORD", "admin12345")),
-                         display_name="宝物殿の管理人", role=Role.admin, email_verified_at=now)
+                         display_name="運営管理者", role=Role.admin, email_verified_at=now)
             db.add(admin)
         staff = User(email="staff@hoshifuru.example", password_hash=hash_password("staff12345"), display_name="運営スタッフ",
                      role=Role.staff, email_verified_at=now)
-        demo = User(email="demo@hoshifuru.example", password_hash=hash_password("demo12345"), display_name="星詠みの旅人",
+        demo = User(email="demo@hoshifuru.example", password_hash=hash_password("demo12345"), display_name="デモ会員",
                     email_verified_at=now)
         db.add_all([staff, demo])
         await db.flush()
@@ -78,7 +79,7 @@ async def seed() -> None:
 
         # ① 確率抽選方式（常設・在庫無制限）
         g1 = Gacha(slug="starlight", title="星明かりの宝物庫", subtitle="いつでも引ける常設ガチャ",
-                   description="宝物殿の入口に佇む、星明かりの宝物庫。\n確率抽選方式のため、いつでも同じ提供割合で抽選されます。",
+                   description="星明かりの宝物庫。\n確率抽選方式のため、いつでも同じ提供割合で抽選されます。",
                    ticket_cost=1, mode="probability", status="published", theme_color="#7654C8", sort_order=2,
                    banner_image_url="/art/banners/starlight.svg")
         # ② ボックス方式（在庫限り・ラストワン賞つき）
@@ -90,10 +91,10 @@ async def seed() -> None:
                    banner_image_url="/art/banners/moonlit.svg", ends_at=now + timedelta(days=30))
         # ③ 確率方式＋総口数上限（期間限定・ラストワン賞つき）
         g3 = Gacha(slug="aurora-festival", title="オーロラ祭の秘宝", subtitle="期間限定・総500口",
-                   description="夜空にオーロラが架かる祭りの夜だけ開かれる宝物殿。\n確率抽選方式・総口数500口。最後の1口にはラストワン賞「宝物殿の鍵」。",
+                   description="夜空にオーロラが架かる祭りの夜だけ開かれる宝箱。\n確率抽選方式・総口数500口。最後の1口にはラストワン賞「黄金の鍵」。",
                    ticket_cost=2, mode="probability", status="published", theme_color="#84D8F1", sort_order=3,
                    max_pulls=500, last_one_prize_id=prizes["lastone_key"].id,
-                   last_one_description="宝物殿の扉を開く、黄金の鍵。",
+                   last_one_description="宝箱を開く、黄金の鍵。",
                    banner_image_url="/art/banners/aurora.svg", starts_at=now - timedelta(days=1), ends_at=now + timedelta(days=14))
         db.add_all([g1, g2, g3])
         await db.flush()
@@ -126,27 +127,27 @@ async def seed() -> None:
             Offer(provider="mock", kind="survey", title="【テスト】ライフスタイルに関するアンケート", description="全10問・約3分のアンケートです。",
                   conditions="すべての設問に回答すると成果となります。", url_template="https://example.com/survey?click={click_id}",
                   reward_tickets=5, estimated_minutes=3, per_user_limit=1, is_test=True, sort_order=3),
-            Offer(provider="mock", kind="survey", title="【テスト】星座と占いの意識調査", description="全20問・約8分のアンケートです。",
+            Offer(provider="mock", kind="survey", title="【テスト】趣味と占いのアンケート", description="全20問・約8分のアンケートです。",
                   conditions="回答内容に不備がある場合は対象外となります。", url_template="https://example.com/survey2?click={click_id}",
                   reward_tickets=10, estimated_minutes=8, per_user_limit=1, is_test=True, sort_order=4),
         ])
         db.add_all([
             Mission(code="first-step", kind="achievement", title="はじめての一歩", description="メールアドレスの確認を完了する",
                     reward_tickets=3, condition_type="email_verified"),
-            Mission(code="draw-10", kind="achievement", title="星を数える者", description="累計10回ガチャを引く",
+            Mission(code="draw-10", kind="achievement", title="ガチャ10回達成", description="累計10回ガチャを引く",
                     reward_tickets=5, condition_type="total_draws", condition_value=10),
-            Mission(code="draw-100", kind="achievement", title="宝物殿の常連", description="累計100回ガチャを引く",
+            Mission(code="draw-100", kind="achievement", title="ガチャ100回達成", description="累計100回ガチャを引く",
                     reward_tickets=20, condition_type="total_draws", condition_value=100),
-            Mission(code="login-7", kind="achievement", title="七つの夜", description="ログインボーナスを7日分受け取る",
+            Mission(code="login-7", kind="achievement", title="7日間ログイン", description="ログインボーナスを7日分受け取る",
                     reward_tickets=7, condition_type="login_days", condition_value=7),
-            Mission(code="autumn-2026", kind="campaign", title="秋の星祭りキャンペーン", description="期間中に参加ボタンを押すだけでポイントをプレゼント",
+            Mission(code="autumn-2026", kind="campaign", title="秋のキャンペーン", description="期間中に参加ボタンを押すだけでポイントをプレゼント",
                     reward_tickets=5, condition_type="none", ends_at=now + timedelta(days=30)),
         ])
         db.add_all([
-            Announcement(title="わくわくガチャ、開殿いたしました", category="important", is_published=True, published_at=now - timedelta(hours=2),
+            Announcement(title="わくわくガチャをオープンしました", category="important", is_published=True, published_at=now - timedelta(hours=2),
                          body="ようこそ、わくわくガチャへ。\n新規登録とメールアドレスの確認で、ポイントをお贈りしています。"),
             Announcement(title="「月影の宮殿くじ」開催中", category="campaign", is_published=True, published_at=now - timedelta(hours=1),
-                         body="全120口のボックスくじを開催中です。最後の1口を引いた方にはラストワン賞「星帝の天球儀」を贈呈します。"),
+                         body="全120口のボックスくじを開催中です。最後の1口を引いた方にはラストワン賞を贈呈します。"),
         ])
         await db.commit()
         print("seed: done (admin@hoshifuru.example / admin12345, staff@hoshifuru.example / staff12345, demo@hoshifuru.example / demo12345)")
@@ -357,8 +358,40 @@ async def create_admin(email: str) -> None:
 
 
 async def purge_pii() -> None:
+    from app.services import privacy
+
     async with SessionLocal() as db:
         print(f"purged: {await exchange_svc.purge_expired_pii(db)}")
+        print(f"purged ips: {await privacy.purge_old_ips(db)}")
+
+
+# 動作確認スクリプト（tools/qa/full-check.mjs）が作るデータの目印
+QA_EMAIL_LIKE = "qa-%@example.com"
+QA_GACHA_LIKE = "qa-%"
+
+
+async def cleanup_test_data() -> None:
+    """動作確認スクリプトが作ったテスト用のアカウント（qa-…@example.com）・ガチャ（qa-…）・クーポン（メモ「QA」）を削除する。
+    会員に紐づく抽選・残高・通知などは一緒に削除される。開発環境（デモ用リンクを含む）専用。"""
+    from sqlalchemy import delete, func
+
+    from app.core.config import settings
+    from app.models import ContactMessage, Coupon
+
+    if settings.is_production:
+        sys.exit("cleanup-test-data: 本番環境では実行できません")
+    async with SessionLocal() as db:
+        users = (await db.execute(delete(User).where(User.email.like(QA_EMAIL_LIKE)).returning(User.id))).scalars().all()
+        contacts = (await db.execute(delete(ContactMessage).where(ContactMessage.email.like(QA_EMAIL_LIKE)).returning(ContactMessage.id))).scalars().all()
+        coupons = (await db.execute(delete(Coupon).where(Coupon.note == "QA").returning(Coupon.id))).scalars().all()
+        # テスト用のガチャは、テスト用のアカウント以外の抽選が残っていない場合だけ削除する
+        gachas = 0
+        for g in (await db.execute(select(Gacha).where(Gacha.slug.like(QA_GACHA_LIKE)))).scalars().all():
+            if not await db.scalar(select(func.count()).select_from(Draw).where(Draw.gacha_id == g.id)):
+                await db.execute(delete(Gacha).where(Gacha.id == g.id))  # 景品の設定などはデータベース側で一緒に削除
+                gachas += 1
+        await db.commit()
+    print(f"cleanup-test-data: アカウント {len(users)} 件、ガチャ {gachas} 件、クーポン {len(coupons)} 件、お問い合わせ {len(contacts)} 件を削除しました")
 
 
 async def verify_draws() -> None:
@@ -405,6 +438,8 @@ def main() -> None:
         asyncio.run(purge_pii())
     elif cmd == "verify-draws":
         asyncio.run(verify_draws())
+    elif cmd == "cleanup-test-data":
+        asyncio.run(cleanup_test_data())
     else:
         print(__doc__)
         sys.exit(2)

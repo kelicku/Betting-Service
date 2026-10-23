@@ -216,7 +216,7 @@ def _ip_rows(since: datetime):
 
 
 @router.get("/users/{user_id}/same-ip")
-async def same_ip_users(user_id: int, _: StaffUser, db: DB, days: int = Query(30, ge=1, le=365)):
+async def same_ip_users(user_id: int, staff: StaffUser, request: Request, db: DB, days: int = Query(30, ge=1, le=365)):
     """複数アカウントの確認：この会員と同じネットワーク（IPv4 は同じアドレス、IPv6 は同じ /64）を使った会員
     （登録・ログイン・広告のクリック、直近 days 日）。
     スマートフォンの回線や家族・お店の Wi-Fi では、別の人でも同じ IP になることがあるため、停止の前に内容を確認すること。"""
@@ -241,6 +241,9 @@ async def same_ip_users(user_id: int, _: StaffUser, db: DB, days: int = Query(30
         for uid, e in sorted(by_user.items(), key=lambda kv: kv[1]["last_at"], reverse=True)
         if uid in users
     ][:100]
+    # IP アドレス（個人情報）の閲覧は操作履歴に記録する
+    audit(db, staff, "user.view_same_ip", "user", u.id, {"days": days, "matches": len(items)}, request)
+    await db.commit()
     return {"user_id": u.id, "days": days, "ips": my_ips, "items": items}
 
 

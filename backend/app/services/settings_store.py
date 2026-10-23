@@ -19,6 +19,8 @@ DEFAULTS: dict[str, Any] = {
     "video_ip_daily_limit": 15,
     # 複数アカウント対策：同じ IP アドレスから 1 日に新規登録できるアカウント数（0 なら制限しない）
     "register_ip_daily_limit": 3,
+    # 複数アカウント対策で記録した IP アドレス（登録時・ログイン・広告のクリック）を保持する日数。過ぎたら消去する
+    "ip_retention_days": 90,
     # SMS 認証：有効にすると、ポイント交換・景品の発送申請の前に電話番号の確認が必要になる
     "sms_verification_required": False,
     # 友達紹介：紹介された人が登録を完了（メール認証＋SMS 認証が必須なら SMS 認証も）したときに付与するチケット
@@ -44,6 +46,7 @@ DESCRIPTIONS: dict[str, str] = {
     "video_daily_limit": "動画リワード広告の 1 日あたりの視聴上限回数（日本時間 0:00 にリセット）",
     "video_ip_daily_limit": "複数アカウント対策：同じ IP アドレス（同じ Wi-Fi など）からの動画視聴の 1 日の合計上限。アカウントが違っても合算（0 なら制限しない）。スマートフォンの回線は他の人と同じ IP になることがあるため、厳しくしすぎないこと",
     "register_ip_daily_limit": "複数アカウント対策：同じ IP アドレスから 1 日に新規登録できるアカウント数（0 なら制限しない）",
+    "ip_retention_days": "記録した IP アドレス（登録時・ログイン・広告のクリック）を保持する日数。過ぎたものは毎日の処理で消去する",
     "sms_verification_required": "SMS 認証を必須にする（有効時、初めてのポイント交換・景品の発送申請の前に電話番号の確認が必要。友達紹介の特典も紹介された方の SMS 認証後に付与）",
     "referral_inviter_tickets": "友達紹介：紹介した人に付与するチケット枚数",
     "referral_invitee_tickets": "友達紹介：紹介された人に付与するチケット枚数",

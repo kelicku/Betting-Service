@@ -13,7 +13,7 @@ const ACTIONS: [string, string][] = [
   ["shop_order", "ポイント交換の対応"],
   ["shop_item", "ポイント交換の景品の設定"],
   ["gift_codes", "ギフトコード登録"],
-  ["user", "ユーザー（停止・権限）"],
+  ["user", "ユーザー（停止・権限・同じ IP の確認）"],
   ["gacha", "ガチャ設定"],
   ["prize", "景品"],
   ["offer", "広告・アンケート案件"],

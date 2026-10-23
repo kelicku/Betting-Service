@@ -69,6 +69,26 @@ services:
       - caddyconfig:/config
     depends_on: [frontend]
 
+  # 毎日 4 時（日本時間）の定期処理：保持期間を過ぎた配送先・IP アドレスの消去、抽選結果の改ざん検知
+  jobs:
+    build: ../backend
+    restart: unless-stopped
+    env_file: [./backend.env]
+    environment:
+      TZ: Asia/Tokyo
+    entrypoint: ["sh", "-c"]
+    command:
+      - |
+        while true; do
+          if [ "$$(date +%H%M)" = "0400" ]; then
+            python -m app.cli purge-pii; python -m app.cli verify-draws || echo "verify-draws: 不一致あり（要確認）"
+            sleep 60
+          fi
+          sleep 30
+        done
+    depends_on:
+      backend: { condition: service_healthy }
+
   # 毎日 3 時（日本時間）にデータベースをバックアップ（14 日分を保持）。別の場所への保管も必ず行うこと
   backup:
     image: postgres:16-alpine

@@ -1,5 +1,6 @@
 // 全機能の動作確認（実際のブラウザ＝Google Chrome で操作する）。
 //   node tools/qa/full-check.mjs            （docker compose で起動中の http://localhost:3300 に対して実行）
+//   確認後、作ったテスト用のアカウントなどは自動で削除する（残す場合は QA_KEEP_DATA=1）
 // 開発・デモ環境専用：テスト用の会員を作り、設定を一時的に変更して最後に元へ戻す。本番には実行しないこと。
 // 必要なもの：Google Chrome、Mailpit（http://localhost:8030）、docker compose（SMS の確認コードをログから読む）
 import { execSync } from "node:child_process";
@@ -321,7 +322,7 @@ await step("クーポン（使い捨て型）：管理画面で発行 → マイ
 });
 await step("クーポン（先着型）：先着1名・1人1回", async () => {
   const code = `QA${RUN}`.toUpperCase().slice(0, 16);
-  await api(admin, "POST", "/admin/coupons", { kind: "shared", tickets: 3, code, max_uses: 1 });
+  await api(admin, "POST", "/admin/coupons", { kind: "shared", tickets: 3, code, max_uses: 1, note: "QA" });
   assert((await api(A, "POST", "/coupons/redeem", { code })).status === 200, "先着1人目が使えない");
   assert((await api(B, "POST", "/coupons/redeem", { code })).body?.error?.code === "coupon_used_up", "先着の上限を超えて使えてしまう");
 });
@@ -682,6 +683,15 @@ await step("ブラウザのエラー・サーバーエラーがない", async ()
   assert(!serverErrors.length, `サーバーエラー ${serverErrors.length} 件：${serverErrors.slice(0, 3).join(" | ")}`);
 });
 await browser.close();
+
+// 確認用に作ったアカウント・ガチャ・クーポンを削除（デモ用リンクを見るお客さまの画面・管理画面に残さない）
+if (!process.env.QA_KEEP_DATA) {
+  try {
+    console.log("   " + execSync("docker compose exec -T backend python -m app.cli cleanup-test-data", { cwd: root }).toString().trim());
+  } catch (e) {
+    console.log("   ※ テスト用データの削除に失敗しました：" + e.message);
+  }
+}
 
 const ng = results.filter((r) => !r.ok);
 console.log(`\n結果：${results.length - ng.length} / ${results.length} 件 成功`);

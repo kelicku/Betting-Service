@@ -274,7 +274,8 @@ type SameIp = {
 
 /** 複数アカウントの確認：同じ IP アドレス（登録・ログイン・広告のクリック）を使った会員。 */
 function SameIpPanel({ userId }: { userId: number }) {
-  const { data } = useSWR<SameIp>(`/api/admin/users/${userId}/same-ip`, fetcher);
+  // 開くたびに操作履歴へ記録されるため、画面の切り替えなどでは再取得しない
+  const { data } = useSWR<SameIp>(`/api/admin/users/${userId}/same-ip`, fetcher, { revalidateOnFocus: false, revalidateOnReconnect: false });
   if (!data) return null;
   return (
     <Panel className="mt-5">

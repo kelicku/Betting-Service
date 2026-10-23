@@ -13,7 +13,7 @@ docker compose exec backend python -m app.cli seed
 - 停止：`docker compose down`（データも消す場合は `docker compose down -v`）
 - 画像を S3 互換ストレージ（MinIO）に保存して試す場合：`docker compose --profile storage up -d minio` を起動し、
   `backend/.env.docker` に `STORAGE_BACKEND=s3`、`S3_ENDPOINT_URL=http://minio:9000`、`S3_ACCESS_KEY=minioadmin`、
-  `S3_SECRET_KEY=minioadmin`、`S3_PUBLIC_BASE_URL=http://localhost:9300/hoshifuru` を設定（バケットは MinIO コンソールで作成し公開読み取りに設定）
+  `S3_SECRET_KEY=minioadmin`、`S3_PUBLIC_BASE_URL=http://localhost:9300/wakuwaku` を設定（バケットは MinIO コンソールで作成し公開読み取りに設定）
 
 ## 方法 B：アプリはローカルで動かす（ホットリロード）
 
