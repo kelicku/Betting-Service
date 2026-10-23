@@ -9,6 +9,7 @@ import { ApiError, api, fetcher } from "@/lib/api";
 import { fmtDateTime } from "@/lib/format";
 import { refreshMe } from "@/lib/hooks";
 import { type MotionLevel, useMotionPref } from "@/lib/motion-pref";
+import { playReveal, unlock as unlockSound, useSound } from "@/lib/sound";
 import type { Me } from "@/lib/types";
 
 type Sess = { id: string; created_at: string; last_seen_at: string; ip: string | null; user_agent: string | null; current: boolean };
@@ -26,6 +27,7 @@ function Content({ me }: { me: Me }) {
   const [pw, setPw] = useState({ current_password: "", new_password: "" });
   const { data: sessions, mutate } = useSWR<Sess[]>("/api/auth/sessions", fetcher);
   const { level, auto, setLevel } = useMotionPref();
+  const [sound, setSound] = useSound();
 
   const saveName = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -95,6 +97,30 @@ function Content({ me }: { me: Me }) {
               </button>
             );
           })}
+        </div>
+      </Panel>
+
+      <Panel>
+        <h2 className="mb-1 font-serif font-bold text-gold-light">効果音</h2>
+        <p className="mb-4 text-xs leading-relaxed text-moon/55">
+          ガチャの演出で効果音を鳴らします（当選ランクの演出動画がある場合は、動画の音が流れます）。iPhone はマナーモード中は音が出ません。
+        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <label className="flex items-center gap-2 text-sm">
+            <input type="checkbox" className="h-5 w-5 accent-[#ff3b7f]" checked={sound} onChange={(e) => setSound(e.target.checked)} />
+            効果音を鳴らす
+          </label>
+          <Button
+            size="sm"
+            variant="ghost"
+            disabled={!sound}
+            onClick={() => {
+              unlockSound();
+              playReveal("SSR");
+            }}
+          >
+            試しに鳴らす
+          </Button>
         </div>
       </Panel>
 

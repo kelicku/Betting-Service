@@ -286,3 +286,15 @@ async def test_recent_wins_shows_only_rare_with_masked_names(client):
     user_api._recent_cache["at"] = 0.0
     wins = (await client.get("/api/recent-wins")).json()
     assert wins and all(w["gacha_slug"] is None for w in wins)
+
+
+async def test_sold_out_gachas_move_to_the_bottom(client):
+    """完売したガチャは、管理画面の表示順に関わらず自動で一覧のいちばん下へ（お客さまのご要望）。"""
+    from app.core import cache
+
+    sold = await create_gacha(mode="box", items=[("N", 1, 0), ("SSR", 1, 0)], sort_order=0)
+    open_ = await create_gacha(mode="box", items=[("N", 1, 5), ("SSR", 1, 1)], sort_order=5)
+    cache.invalidate("gachas:list")
+    slugs = [g["slug"] for g in (await client.get("/api/gachas")).json()]
+    assert slugs.index(open_.slug) < slugs.index(sold.slug)
+    assert slugs[-1] == sold.slug

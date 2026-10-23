@@ -241,10 +241,9 @@ export function Spinner({ label = "読み込み中…" }: { label?: string }) {
 export function Empty({ title, children }: { title: string; children?: React.ReactNode }) {
   return (
     <div className="flex flex-col items-center gap-3 py-14 text-center">
-      <svg viewBox="0 0 64 64" className="h-14 w-14 text-gold/50" aria-hidden>
-        <circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" strokeWidth="1" strokeDasharray="2 4" />
-        <path d="M32 18l3 11 11 3-11 3-3 11-3-11-11-3 11-3z" fill="currentColor" />
-      </svg>
+      {/* サイトのキャラクター（猫） */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src="/images/waku/cat-face.webp" alt="" width={260} height={195} className="h-auto w-20 opacity-90" loading="lazy" />
       <p className="font-serif text-lg text-moon/80">{title}</p>
       {children && <div className="text-sm text-moon/55">{children}</div>}
     </div>

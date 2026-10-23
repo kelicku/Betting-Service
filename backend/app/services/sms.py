@@ -138,7 +138,7 @@ async def request_code(db: AsyncSession, user: User, raw_phone: str) -> str:
     )
     db.add(row)
     await db.flush()
-    await send_sms(e164, f"【わくわくガチャ】確認コード：{code}（{settings.sms_code_ttl_minutes}分間有効）。このコードを他人に教えないでください。")
+    await send_sms(e164, f"【{settings.app_name}】確認コード：{code}（{settings.sms_code_ttl_minutes}分間有効）。このコードを他人に教えないでください。")
     await db.commit()
     return e164[-4:]
 

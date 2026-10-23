@@ -2313,13 +2313,13 @@
       }
     },
     "/api/postbacks/{provider_name}": {
-      "post": {
+      "get": {
         "tags": [
           "成果通知（サーバー間）"
         ],
         "summary": "Postback",
         "description": "広告・アンケート事業者からの成果通知を受け取る。署名・時刻・click_id を検証し、\n正しく確認できた成果に対してのみチケットを付与する。",
-        "operationId": "postback_api_postbacks__provider_name__post",
+        "operationId": "postback_api_postbacks__provider_name__get",
         "parameters": [
           {
             "name": "provider_name",
@@ -2354,13 +2354,13 @@
           }
         }
       },
-      "get": {
+      "post": {
         "tags": [
           "成果通知（サーバー間）"
         ],
         "summary": "Postback",
         "description": "広告・アンケート事業者からの成果通知を受け取る。署名・時刻・click_id を検証し、\n正しく確認できた成果に対してのみチケットを付与する。",
-        "operationId": "postback_api_postbacks__provider_name__post",
+        "operationId": "postback_api_postbacks__provider_name__get",
         "parameters": [
           {
             "name": "provider_name",
@@ -2606,6 +2606,59 @@
         }
       }
     },
+    "/api/admin/users/{user_id}/same-ip": {
+      "get": {
+        "tags": [
+          "管理"
+        ],
+        "summary": "Same Ip Users",
+        "description": "複数アカウントの確認：この会員と同じネットワーク（IPv4 は同じアドレス、IPv6 は同じ /64）を使った会員\n（登録・ログイン・広告のクリック、直近 days 日）。\nスマートフォンの回線や家族・お店の Wi-Fi では、別の人でも同じ IP になることがあるため、停止の前に内容を確認すること。",
+        "operationId": "same_ip_users_api_admin_users__user_id__same_ip_get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "User Id"
+            }
+          },
+          {
+            "name": "days",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 365,
+              "minimum": 1,
+              "default": 30,
+              "title": "Days"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/admin/users/{user_id}/suspend": {
       "post": {
         "tags": [
@@ -2820,7 +2873,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/TicketAdjustIn"
+                "$ref": "#/components/schemas/PointAdjustIn"
               }
             }
           }
@@ -7773,6 +7826,11 @@
               }
             ],
             "title": "Daily Limit"
+          },
+          "ip_limit_reached": {
+            "type": "boolean",
+            "title": "Ip Limit Reached",
+            "default": false
           }
         },
         "type": "object",
@@ -8054,6 +8112,35 @@
           "phone"
         ],
         "title": "PhoneIn"
+      },
+      "PointAdjustIn": {
+        "properties": {
+          "delta": {
+            "type": "integer",
+            "maximum": 10000000.0,
+            "minimum": -10000000.0,
+            "title": "Delta"
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 150,
+            "minLength": 2,
+            "title": "Reason"
+          },
+          "idempotency_key": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 8,
+            "title": "Idempotency Key"
+          }
+        },
+        "type": "object",
+        "required": [
+          "delta",
+          "reason",
+          "idempotency_key"
+        ],
+        "title": "PointAdjustIn"
       },
       "PrizeIn": {
         "properties": {

@@ -83,7 +83,7 @@ class SecurityMiddleware(BaseHTTPMiddleware):
 
 
 app = FastAPI(
-    title="わくわくガチャ API",
+    title=f"{settings.app_name} API",
     version="1.0.0",
     description="WEBガチャプラットフォームのバックエンド API。抽選・チケット・ポイント・在庫の処理はすべてサーバー側で行います。",
     docs_url="/api/docs",

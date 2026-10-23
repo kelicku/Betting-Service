@@ -110,7 +110,7 @@ export default function GachaForm({
       <Field label="開始日時（日本時間・任意）">
         <input className="field" type="datetime-local" value={toLocal(v.starts_at)} onChange={(e) => set("starts_at", fromLocal(e.target.value))} />
       </Field>
-      <Field label="終了日時（日本時間・任意）">
+      <Field label="終了日時（日本時間・任意）" hint="空欄にすると「終了まで〜日」は表示されず、完売（ラストワン賞）まで続きます。設定すると、その日時でガチャが終了します">
         <input className="field" type="datetime-local" value={toLocal(v.ends_at)} onChange={(e) => set("ends_at", fromLocal(e.target.value))} />
       </Field>
       {v.mode === "probability" && (

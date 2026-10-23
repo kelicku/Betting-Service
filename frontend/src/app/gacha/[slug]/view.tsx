@@ -14,6 +14,7 @@ import { Alert, Button, Modal, Ornament, Panel, RarityBadge, TicketIcon, Tickets
 import { fetcher } from "@/lib/api";
 import { RARITIES, RARITY, fmtDateTime, fmtNum, fmtPercent, timeLeft } from "@/lib/format";
 import { SignupBonusBanner } from "@/components/SignupBonus";
+import { unlock as unlockSound } from "@/lib/sound";
 import { useMe } from "@/lib/hooks";
 import { createPending } from "@/lib/pending";
 import type { GachaDetail } from "@/lib/types";
@@ -52,6 +53,7 @@ export default function GachaDetailView({ initial }: { initial: GachaDetail }) {
   };
 
   const go = (n: Count) => {
+    unlockSound(); // スマートフォンでも演出の効果音が鳴るように、押した瞬間に音を有効にしておく
     const p = createPending(g.slug, g.id, n);
     router.push(`/gacha/${g.slug}/play?k=${p.key}&n=${n}`);
   };

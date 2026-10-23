@@ -13,6 +13,7 @@ import { OutlineText } from "@/components/SiteChrome";
 import { TicketIcon, cx } from "@/components/ui";
 import { useMe } from "@/lib/hooks";
 import type { GachaSummary, Rarity } from "@/lib/types";
+import { SITE } from "@/lib/site";
 
 const fmt = (n: number) => n.toLocaleString("ja-JP");
 const reveal = {
@@ -189,7 +190,7 @@ function GachaCard({ g, index }: { g: GachaSummary; index: number }) {
     <Link href={`/gacha/${g.slug}`} className="gacha-frame group block h-[296px]" aria-label={`${g.title}（1回 チケット${g.ticket_cost}枚）`}>
       <div className="relative h-[216px] overflow-hidden">
         {g.banner_image_url ? (
-          <Image src={g.banner_image_url} alt="" fill sizes="(min-width:1024px) 430px, 82vw" className="gacha-art object-cover" />
+          <Image src={g.banner_image_url} alt="" fill sizes="(min-width:1024px) 430px, 82vw" className={cx("gacha-art object-cover", sold && "grayscale-[70%] opacity-70")} />
         ) : (
           <div className="gacha-art h-full w-full bg-[linear-gradient(135deg,#ffd6e8,#d9e8ff)]" />
         )}
@@ -293,7 +294,7 @@ export function HowToPlay() {
         <h2 id="howto-title" className="flex items-end gap-1.5 font-round font-black tracking-[-0.02em]">
           <Image width={98} height={74} src="/images/waku/cat-face.webp" alt="" className="h-auto w-16 lg:w-[98px]" />
           <span className="mb-1 whitespace-nowrap text-[1.25rem] leading-none sm:text-[1.45rem] lg:mb-2 lg:text-[2.1rem]">
-            <span className="grad-text grad-magenta">わくわくガチャ</span>
+            <span className="grad-text grad-magenta">{SITE.name}</span>
             <span className="text-[#1d2350]">の遊び方</span>
           </span>
         </h2>

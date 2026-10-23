@@ -10,6 +10,7 @@ from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import AppError, NotFound
+from app.core.netkey import net_key, same_net
 from app.models import Conversion, Notification, Offer, OfferClick, PostbackLog, User
 from app.models.enums import ConversionStatus, OfferKind, TicketKind, UserStatus
 from app.providers.base import BaseProvider, PostbackData, PostbackRejected
@@ -63,6 +64,29 @@ async def video_daily_limit(db: AsyncSession) -> int:
     return int(await settings_store.get(db, "video_daily_limit"))
 
 
+async def video_views_today_by_ip(db: AsyncSession, ip: str) -> int:
+    """今日（日本時間）、同じネットワーク（IPv4 は同じアドレス、IPv6 は同じ /64）から視聴されてチケットを付与した動画の回数
+    （アカウントが違っても合算）。"""
+    if net_key(ip) is None:
+        return 0
+    return await db.scalar(
+        select(func.count()).select_from(Conversion).join(OfferClick, OfferClick.id == Conversion.click_id).where(
+            same_net(OfferClick.ip, ip),
+            Conversion.kind == OfferKind.video,
+            Conversion.status == ConversionStatus.credited,
+            Conversion.received_at >= jst_day_start(),
+        )
+    ) or 0
+
+
+async def video_ip_daily_limit(db: AsyncSession) -> int:
+    return int(await settings_store.get(db, "video_ip_daily_limit"))
+
+
+def ip_limit_message(limit: int) -> str:
+    return f"同じネットワーク（Wi-Fi など）からの動画の視聴が、今日の上限（合計 {limit} 回）に達しました。明日（0:00 以降）またご利用ください。"
+
+
 async def create_click(db: AsyncSession, user: User, offer_id: int, ip: str | None) -> tuple[OfferClick, str]:
     offer = await db.get(Offer, offer_id)
     if offer is None or not offer_available(offer):
@@ -71,6 +95,9 @@ async def create_click(db: AsyncSession, user: User, offer_id: int, ip: str | No
         limit = await video_daily_limit(db)
         if await video_views_today(db, user.id) >= limit:
             raise AppError("video_daily_limit", f"動画の視聴は 1 日 {limit} 回までです。明日（0:00 以降）またご利用ください。", 409)
+        ip_limit = await video_ip_daily_limit(db)
+        if ip and ip_limit > 0 and await video_views_today_by_ip(db, ip) >= ip_limit:
+            raise AppError("video_ip_daily_limit", ip_limit_message(ip_limit), 409)
     elif await credited_count(db, user.id, offer.id) >= offer.per_user_limit:
         raise AppError("offer_limit", "この案件の報酬は既に獲得済みです。", 409)
     click = OfferClick(user_id=user.id, offer_id=offer.id, ip=ip)
@@ -165,13 +192,19 @@ async def handle_postback(
     conv = await db.get(Conversion, conv_id)
     assert conv is not None
     if reject_reason is None:
-        assert user is not None and offer is not None
+        assert user is not None and offer is not None and click is not None
         # 1 ユーザーあたりの獲得上限（ウォレットロックで直列化してから数える）
         await tickets.lock_wallet(db, user.id)
         if offer.kind == OfferKind.video:
             # 動画リワード広告は 1 日の視聴回数の上限（今回の通知を含めて数える）。画面で止めていても、通知側でも必ず確認する
             over = await video_views_today(db, user.id) > await video_daily_limit(db)
             over_reason = "daily_limit"
+            ip_limit = await video_ip_daily_limit(db)
+            if not over and click.ip and ip_limit > 0:
+                # 同じ IP の別アカウントと同時に届いても上限を超えないよう、IP ごとに直列化してから数える
+                await db.execute(select(func.pg_advisory_xact_lock(func.hashtext(f"video-ip:{net_key(click.ip)}"))))
+                if await video_views_today_by_ip(db, click.ip) > ip_limit:
+                    over, over_reason = True, "ip_daily_limit"
         else:
             over = await credited_count(db, user.id, offer.id) > offer.per_user_limit
             over_reason = "per_user_limit"

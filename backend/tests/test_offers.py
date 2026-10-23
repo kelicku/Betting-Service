@@ -202,3 +202,15 @@ async def test_mock_signature_cannot_credit_real_offer(client, make_client, db_s
     server = await make_client()
     await server.http.get("/api/postbacks/mock", params=_params(click, secret=mock_secret()))
     assert await balance_of(u.id) == 0
+
+
+async def test_fluct_and_skyflag_postback_endpoints_are_ready(make_client, monkeypatch):
+    """fluct・skyflag の成果通知の受け口は用意済み。署名鍵が未設定の間は付与しない（503）。設定すれば署名を検証して受け付ける。"""
+    c = await make_client()
+    for name in ("fluct", "skyflag"):
+        monkeypatch.delenv(f"POSTBACK_SECRET_{name.upper()}", raising=False)
+        r = await c.http.get(f"/api/postbacks/{name}", params={"click_id": "x", "conversion_id": "y", "status": "approved", "ts": "0", "sig": "z"})
+        assert r.status_code == 503
+        monkeypatch.setenv(f"POSTBACK_SECRET_{name.upper()}", "test-secret")
+        r = await c.http.get(f"/api/postbacks/{name}", params={"click_id": "x", "conversion_id": "y", "status": "approved", "ts": "0", "sig": "bad"})
+        assert r.status_code == 403  # 署名が違う通知は拒否

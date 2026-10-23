@@ -24,6 +24,12 @@ def get_provider(name: str) -> BaseProvider | None:
 # 実際の広告・アンケート事業者をここに登録する。
 # 署名方式が汎用 HMAC と異なる場合は BaseProvider を継承した専用クラスを作成する。
 PROVIDERS: dict[str, BaseProvider] = {
+    # fluct（動画リワード広告・最初に導入）、skyflag（オファーウォール・ユーザー数が増えてから導入）。
+    # 署名鍵は環境変数 POSTBACK_SECRET_FLUCT / POSTBACK_SECRET_SKYFLAG、送信元 IP の制限は POSTBACK_IPS_FLUCT など。
+    # 成果通知の受け口：https://（ドメイン）/api/postbacks/fluct 。各社の通知の形式（パラメータ名・署名方式）が
+    # 汎用 HMAC と異なる場合は、資料をもとに BaseProvider を継承した専用クラスに差し替える
+    "fluct": HmacProvider("fluct"),
+    "skyflag": HmacProvider("skyflag"),
     "adnetwork": HmacProvider("adnetwork"),
     "surveyhub": HmacProvider("surveyhub"),
 }

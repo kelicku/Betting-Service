@@ -123,6 +123,8 @@ export default function AdminUserDetail() {
         <Stat label="登録日時" value={<span className="text-base">{fmtDateTime(u.created_at)}</span>} sub={`最終ログイン ${fmtDateTime(u.last_login_at)}`} />
       </div>
 
+      <SameIpPanel userId={u.id} />
+
       {isAdmin && (
         <Panel className="mt-5">
           <div className="flex flex-wrap items-center gap-3">
@@ -261,5 +263,56 @@ export default function AdminUserDetail() {
         </div>
       </Modal>
     </div>
+  );
+}
+
+type SameIp = {
+  ips: string[];
+  days: number;
+  items: { id: number; email: string; display_name: string; status: string; created_at: string; phone_verified_at: string | null; shared_ips: string[]; last_seen_at: string }[];
+};
+
+/** 複数アカウントの確認：同じ IP アドレス（登録・ログイン・広告のクリック）を使った会員。 */
+function SameIpPanel({ userId }: { userId: number }) {
+  const { data } = useSWR<SameIp>(`/api/admin/users/${userId}/same-ip`, fetcher);
+  if (!data) return null;
+  return (
+    <Panel className="mt-5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="font-serif font-bold text-gold-light">
+          同じ IP アドレスの会員 {data.items.length > 0 && <Badge tone={data.items.length >= 3 ? "bad" : "warn"}>{data.items.length}人</Badge>}
+        </h2>
+        <span className="text-xs text-moon/50">直近 {data.days} 日・登録／ログイン／広告のクリック</span>
+      </div>
+      <p className="mt-1 text-xs leading-relaxed text-moon/55">
+        複数アカウントの確認に使います。スマートフォンの回線や、家族・お店の Wi-Fi では、別の人でも同じ IP アドレスになることがあります。停止する前に、登録日時や利用状況をあわせて確認してください。
+      </p>
+      {data.items.length === 0 ? (
+        <p className="mt-3 text-sm text-moon/60">同じ IP アドレスを使った会員はいません。</p>
+      ) : (
+        <TableWrap>
+          <table className="table-base">
+            <thead>
+              <tr><th>会員</th><th>状態</th><th>SMS 認証</th><th>共通の IP アドレス</th><th>最後に同じ IP を使った日時</th></tr>
+            </thead>
+            <tbody>
+              {data.items.map((x) => (
+                <tr key={x.id}>
+                  <td className="text-xs">
+                    <Link href={`/admin/users/${x.id}`} className="text-gold-light hover:underline">#{x.id} {x.display_name}</Link>
+                    <div className="text-moon/50">{x.email}</div>
+                  </td>
+                  <td>{x.status === "suspended" ? <Badge tone="bad">停止中</Badge> : <Badge tone="good">有効</Badge>}</td>
+                  <td className="text-xs">{x.phone_verified_at ? "済み" : "未"}</td>
+                  <td className="font-mono text-[11px] text-moon/70">{x.shared_ips.join(", ")}</td>
+                  <td className="whitespace-nowrap text-xs text-moon/55">{fmtDateTime(x.last_seen_at)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </TableWrap>
+      )}
+      {data.ips.length > 0 && <p className="mt-3 font-mono text-[11px] text-moon/40">この会員の IP アドレス：{data.ips.slice(0, 10).join(", ")}{data.ips.length > 10 ? " ほか" : ""}</p>}
+    </Panel>
   );
 }

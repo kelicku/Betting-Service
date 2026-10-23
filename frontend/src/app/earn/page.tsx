@@ -13,7 +13,8 @@ import type { Me, Mission, Offer } from "@/lib/types";
 function OfferCard({ o, onStart }: { o: Offer; onStart: (o: Offer) => void }) {
   const video = o.kind === "video";
   // 動画リワード広告は 1 日の視聴上限（すべての動画の合計、日本時間 0:00 にリセット）。それ以外は案件ごとの獲得上限
-  const done = video ? (o.daily_used ?? 0) >= (o.daily_limit ?? 0) : o.earned_count >= o.per_user_limit;
+  const ipDone = video && !!o.ip_limit_reached;
+  const done = video ? (o.daily_used ?? 0) >= (o.daily_limit ?? 0) || ipDone : o.earned_count >= o.per_user_limit;
   return (
     <div className="glass flex flex-col p-5">
       <div className="flex items-start justify-between gap-3">
@@ -40,6 +41,11 @@ function OfferCard({ o, onStart }: { o: Offer; onStart: (o: Offer) => void }) {
           {o.conditions}
         </p>
       )}
+      {ipDone && (
+        <p className="mt-3 rounded-lg bg-gold/10 px-3 py-2 text-xs leading-relaxed text-gold-light">
+          同じネットワーク（Wi-Fi など）からの視聴が今日の上限に達しました。明日（0:00 以降）またご利用ください。
+        </p>
+      )}
       <div className="mt-auto flex items-center justify-between gap-2 pt-4 text-xs text-moon/45">
         {video ? (
           <span className={cx(done && "font-bold text-gold-light")}>
@@ -50,7 +56,7 @@ function OfferCard({ o, onStart }: { o: Offer; onStart: (o: Offer) => void }) {
             獲得 {o.earned_count}/{o.per_user_limit}回{o.ends_at && `・${fmtDate(o.ends_at)}まで`}
           </span>
         )}
-        <Button size="sm" variant={done ? "subtle" : "gold"} disabled={done} onClick={() => onStart(o)}>
+        <Button size="sm" className="shrink-0 whitespace-nowrap" variant={done ? "subtle" : "gold"} disabled={done} onClick={() => onStart(o)}>
           {done ? (video ? "今日の上限に達しました" : "獲得済み") : video ? "動画を見る" : "挑戦する"}
         </Button>
       </div>
@@ -73,7 +79,7 @@ function Content({ me }: { me: Me }) {
       setActive({ offer: o, url: r.url, clickId: r.click_id });
     } catch (e) {
       toast((e as ApiError).message, "error");
-      if ((e as ApiError).code === "video_daily_limit") mutOffers();
+      if (["video_daily_limit", "video_ip_daily_limit"].includes((e as ApiError).code ?? "")) mutOffers();
     }
   };
 

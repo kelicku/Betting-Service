@@ -8,6 +8,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import { api } from "@/lib/api";
 import { refreshMe, useMe } from "@/lib/hooks";
 import { TicketIcon, cx } from "./ui";
+import { SITE } from "@/lib/site";
 
 const NAV = [
   { href: "/", label: "ホーム" },
@@ -31,14 +32,14 @@ export function OutlineText({ children, className, stroke = 8 }: { children: Rea
 
 export function Logo({ large }: { large?: boolean }) {
   return (
-    <Link href="/" className="group flex shrink-0 items-center gap-1 whitespace-nowrap" aria-label="わくわくガチャ トップへ">
+    <Link href="/" className="group flex shrink-0 items-center gap-1 whitespace-nowrap" aria-label={`${SITE.name} トップへ`}>
       <Image
         width={56} height={72} src="/images/waku/logo-coin.webp"
         alt=""
         className={cx("shrink-0 object-contain transition-transform duration-500 group-hover:-rotate-12 group-hover:scale-110", large ? "h-12 w-12 sm:h-16 sm:w-16" : "h-7 w-7 min-[380px]:h-8 min-[380px]:w-8 sm:h-[3.6rem] sm:w-[3.6rem]")}
       />
       <OutlineText stroke={large ? 9 : 7} className={cx("logo-text font-round font-black tracking-[-0.02em]", large ? "text-[2rem] sm:text-[2.6rem]" : "text-[1rem] min-[380px]:text-[1.15rem] min-[400px]:text-[1.4rem] sm:text-[2rem] min-[1400px]:text-[2.45rem]")}>
-        わくわくガチャ
+        {SITE.name}
       </OutlineText>
     </Link>
   );
@@ -426,7 +427,7 @@ export function Footer() {
         <NewsletterForm />
       </div>
       <div className="border-t border-[#ffd6e4] bg-white/70 py-4 pb-[calc(1rem+5rem)] text-center text-xs tracking-wide text-[#6a6f99] md:pb-4">
-        © {year} わくわくガチャ ｜ WAKUWAKU GACHA. All Rights Reserved.
+        © {year} {SITE.name} ｜ {SITE.nameEn}. All Rights Reserved.
       </div>
     </footer>
   );

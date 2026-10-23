@@ -11,6 +11,7 @@ import Link from "next/link";
 import { motion, useScroll, useTransform } from "motion/react";
 import { useMemo, useRef } from "react";
 import { OutlineText } from "@/components/SiteChrome";
+import { SITE } from "@/lib/site";
 
 export type PublicStats = { members: number; tickets_earned: number; items: number; signup_bonus?: number; signup_bonus_points?: number };
 
@@ -98,10 +99,19 @@ export default function HomeHero() {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
       >
+        {/* キャラクターの吹き出し（サイトの顔として目に入るように） */}
+        <motion.p
+          className="hero-bubble absolute left-[16%] top-[-4%] z-10 whitespace-nowrap rounded-full px-4 py-1.5 font-round text-[0.95rem] font-black text-[#ff2f6e] sm:left-[10%] sm:text-[1.05rem] lg:left-[14%] lg:top-[-2%] lg:px-6 lg:py-2.5 lg:text-[1.4rem]"
+          initial={{ opacity: 0, scale: 0.6, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ delay: 1.1, type: "spring", stiffness: 260, damping: 14 }}
+        >
+          {SITE.mascot.name ? `${SITE.mascot.name}「${SITE.mascot.greeting}」` : SITE.mascot.greeting}
+        </motion.p>
         <div className="waku-float">
           <Image
-            src="/images/waku/hero-cat.webp"
-            alt="宝箱の上でバンザイする三毛猫と、あふれるコインと宝石"
+            src={SITE.mascot.full}
+            alt={`${SITE.name}のキャラクター：宝箱の上でバンザイする三毛猫`}
             width={1200}
             height={933}
             priority

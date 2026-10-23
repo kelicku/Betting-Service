@@ -272,7 +272,8 @@ async def showcase() -> None:
                     it.is_active, it.sort_order = True, j
             g.title, g.badge, g.banner_image_url, g.subtitle, g.sort_order, g.ticket_cost = title, badge, image, sub, i, cost
             g.description = f"{sub}。1回 チケット{cost}枚。在庫数に基づく抽選方式（全{sum(s for _, s in items):,}口）。ポイントが当たると、ポイント残高に自動で加算されます。"
-            g.ends_at = g.ends_at or now + timedelta(days=45)
+            # 終了日は設定しない（お客さまの方針：ラストワン賞まで届かずに終わると信用を失うため、完売まで続ける）
+            g.ends_at = None
             # すべてのガチャにラストワン賞を設定する（管理画面の「ラストワン賞」から差し替え可能）
             lo = await prize_for(lo_key)
             g.last_one_prize_id = lo.id

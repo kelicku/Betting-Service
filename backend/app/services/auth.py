@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, timedelta
 
 from fastapi import Request, Response
-from sqlalchemy import select, update
+from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core import mail
@@ -136,10 +136,14 @@ def validate_password(password: str) -> None:
         raise AppError("weak_password", "パスワードには英字と数字をそれぞれ1文字以上含めてください。")
 
 
-async def register(db: AsyncSession, email: str, password: str, display_name: str, invite_code: str | None = None) -> None:
+async def register(
+    db: AsyncSession, email: str, password: str, display_name: str, invite_code: str | None = None, ip: str | None = None
+) -> None:
     """新規登録。メールアドレスの登録有無を推測されないよう、結果に関わらず同じ応答を返す。"""
     email = normalize_email(email)
     validate_password(password)
+    # 登録済みのアドレスかどうかを推測されないよう、上限の確認はアドレスの照合より先に行う
+    await check_register_ip_limit(db, ip)
     existing = await db.scalar(select(User).where(User.email == email))
     if existing is not None:
         await mail.send_mail(
@@ -154,7 +158,7 @@ async def register(db: AsyncSession, email: str, password: str, display_name: st
 
     inviter = await referrals.find_inviter(db, invite_code)
     user = User(email=email, password_hash=hash_password(password), display_name=display_name.strip(),
-                referred_by_id=inviter.id if inviter else None)
+                referred_by_id=inviter.id if inviter else None, signup_ip=ip)
     db.add(user)
     await db.flush()
     await tickets.ensure_wallet(db, user.id)
@@ -162,6 +166,29 @@ async def register(db: AsyncSession, email: str, password: str, display_name: st
     token = await issue_token(db, user, TokenPurpose.verify_email)
     await db.commit()
     await mail.send_verify_email(email, user.display_name, token)
+
+
+async def check_register_ip_limit(db: AsyncSession, ip: str | None) -> None:
+    """複数アカウント対策：同じネットワーク（IPv4 は同じアドレス、IPv6 は同じ /64）から今日（日本時間）新規登録できるアカウント数の上限。"""
+    from app.core.netkey import net_key, same_net
+    from app.services import offers, settings_store
+
+    if net_key(ip) is None or not settings.rate_limit_enabled:
+        return
+    limit = int(await settings_store.get(db, "register_ip_daily_limit"))
+    if limit <= 0:
+        return
+    count = await db.scalar(
+        select(func.count()).select_from(User).where(
+            User.signup_ip.is_not(None), same_net(User.signup_ip, ip), User.created_at >= offers.jst_day_start()
+        )
+    ) or 0
+    if count >= limit:
+        raise AppError(
+            "register_ip_limit",
+            "同じネットワーク（Wi-Fi など）からの新規登録が、今日の上限に達しました。明日あらためてお試しください。",
+            429,
+        )
 
 
 async def resend_verification(db: AsyncSession, user: User) -> None:
@@ -204,7 +231,7 @@ async def complete_email_verification(db: AsyncSession, user: User) -> bool:
             Notification(
                 user_id=user.id,
                 kind="welcome",
-                title="わくわくガチャへようこそ",
+                title=f"{settings.app_name}へようこそ",
                 body=f"新規登録特典としてチケット{bonus}枚をお贈りしました。",
                 link="/gacha",
             )

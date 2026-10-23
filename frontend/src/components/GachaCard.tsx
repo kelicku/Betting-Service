@@ -6,7 +6,7 @@ import { useRef } from "react";
 import { fmtNum, timeLeft } from "@/lib/format";
 import type { GachaSummary } from "@/lib/types";
 import { MiniCountdown } from "./Engage";
-import { RarityBadge, TicketIcon } from "./ui";
+import { RarityBadge, TicketIcon, cx } from "./ui";
 
 export function RemainingBar({ remaining, total }: { remaining: number; total: number }) {
   const pct = total > 0 ? Math.max(0, Math.min(100, (remaining / total) * 100)) : 0;
@@ -46,6 +46,7 @@ export default function GachaCard({ g, index = 0 }: { g: GachaSummary; index?: n
     if (ref.current) ref.current.style.transform = "";
   };
   const left = timeLeft(g.ends_at);
+  const sold = g.remaining === 0;
   return (
     <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-40px" }} transition={{ duration: 0.6, delay: index * 0.08 }}>
       <Link
@@ -59,7 +60,7 @@ export default function GachaCard({ g, index = 0 }: { g: GachaSummary; index?: n
         <div className="relative aspect-[2/1] overflow-hidden">
           {g.banner_image_url ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={g.banner_image_url} alt="" className="h-full w-full object-cover transition-transform duration-[1.2s] group-hover:scale-105" loading={index < 2 ? "eager" : "lazy"} />
+            <img src={g.banner_image_url} alt="" className={cx("h-full w-full object-cover transition-transform duration-[1.2s] group-hover:scale-105", sold && "grayscale-[70%] opacity-70")} loading={index < 2 ? "eager" : "lazy"} />
           ) : (
             <div className="h-full w-full" style={{ background: `radial-gradient(circle at 70% 30%, ${g.theme_color}, #080d20)` }} />
           )}
@@ -77,6 +78,7 @@ export default function GachaCard({ g, index = 0 }: { g: GachaSummary; index?: n
               className="absolute bottom-3 right-4 w-[22%] rounded-lg border border-gold/50 shadow-glow transition-transform duration-700 group-hover:-translate-y-1 group-hover:rotate-2"
             />
           )}
+          {sold && <span className="absolute right-3 top-3 z-10 rounded-full bg-[#1d2350]/85 px-3 py-1 text-xs font-bold text-white">完売</span>}
           <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
             {!g.is_open && <span className="rounded-full bg-night/80 px-2.5 py-1 text-[11px] text-moon/70">開催期間外</span>}
             {g.mode === "box" && <span className="rounded-full border border-gold/40 bg-night/70 px-2.5 py-1 text-[11px] text-gold-light backdrop-blur">ボックス</span>}

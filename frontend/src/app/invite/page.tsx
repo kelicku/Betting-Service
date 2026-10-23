@@ -8,6 +8,7 @@ import { useToast } from "@/components/Toast";
 import { Button, PageTitle, Panel, Spinner } from "@/components/ui";
 import { fetcher } from "@/lib/api";
 import type { InviteInfo } from "@/lib/types";
+import { SITE } from "@/lib/site";
 
 function Content() {
   const toast = useToast();
@@ -16,7 +17,7 @@ function Content() {
   const link = typeof window !== "undefined" ? `${window.location.origin}/register?ref=${data.invite_code}` : "";
   const copy = (text: string, label: string) =>
     navigator.clipboard?.writeText(text).then(() => toast(`${label}をコピーしました`), () => toast("コピーできませんでした", "error"));
-  const shareText = `わくわくガチャで遊ぼう！この招待コードで登録するとチケットがもらえるよ：${data.invite_code}`;
+  const shareText = `${SITE.name}で遊ぼう！この招待コードで登録するとチケットがもらえるよ：${data.invite_code}`;
   return (
     <div className="space-y-5">
       <Panel strong className="text-center">

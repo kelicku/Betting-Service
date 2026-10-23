@@ -2,11 +2,13 @@
 
 import dynamic from "next/dynamic";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { MascotSays } from "@/components/Mascot";
 import { PrizeCard } from "@/components/PrizeCard";
 import { Button, Modal, Points, RarityBadge, Tickets } from "@/components/ui";
 import { RARITY } from "@/lib/format";
 import { useMotionPref } from "@/lib/motion-pref";
+import { playCharge, playLastOne, playReveal, useSound } from "@/lib/sound";
 import type { Draw, DrawResult } from "@/lib/types";
 import Ceremony2D from "./Ceremony2D";
 import type { CeremonyHandle, CeremonyVariant } from "./CeremonyScene";
@@ -50,9 +52,33 @@ export default function GachaCeremony({
     [normal],
   );
 
-  const onReveal = useCallback(() => {
-    setStage((s) => (s === "summon" ? "reveal" : s === "lastone-summon" ? "lastone-reveal" : s));
+  // 効果音：ため → 公開（ランクごと）。演出動画のあと（instant）は動画の音を使うので鳴らさない
+  const stopCharge = useRef<() => void>(() => {});
+  useEffect(() => {
+    if (instant) return;
+    if (stage === "summon" || stage === "lastone-summon") {
+      // 公開までの秒数（3D：CeremonyScene のタイムライン、2D：Ceremony2D のタイマー）
+      const v = stage === "lastone-summon" ? "lastone" : variant;
+      const k = level === "full" ? { lastone: 1.35, multi: 0.75, normal: 1 }[v] * 3.8 : { lastone: 1.3, multi: 0.7, normal: 1 }[v] * 2.6;
+      stopCharge.current = playCharge(Math.max(0.8, k - 0.15));
+    }
+    return () => stopCharge.current();
+  }, [stage, instant, level, variant]);
+  useEffect(() => {
+    // 演出を最小限にしている場合は、結果の表示と同時に 1 回だけ鳴らす
+    if (instant || level !== "off") return;
+    if (lastOne) playLastOne();
+    else playReveal(bestNormal);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const onReveal = useCallback(() => {
+    setStage((s) => {
+      if (s === "summon") playReveal(bestNormal);
+      if (s === "lastone-summon") playLastOne();
+      return s === "summon" ? "reveal" : s === "lastone-summon" ? "lastone-reveal" : s;
+    });
+  }, [bestNormal]);
   const onSceneDone = useCallback(() => setSceneOn(false), []);
 
   const finishReveal = useCallback(() => setRevealDone(true), []);
@@ -124,7 +150,7 @@ export default function GachaCeremony({
           )}
           {stage === "reveal" && draw.count === 100 && (
             <motion.div className="w-full max-w-5xl" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} onAnimationComplete={finishReveal}>
-              <p className="mb-4 text-center font-serif text-lg text-gold-light/90">100回分の宝物</p>
+              <p className="mb-4 text-center font-serif text-lg text-gold-light/90">100回分の結果</p>
               <RarityCounts counts={draw.rarity_counts} animate={!skipAll} />
               <div className="mt-5">
                 <ResultGrid results={normal} onSelect={setSelected} dense />
@@ -134,7 +160,8 @@ export default function GachaCeremony({
           {stage === "lastone-reveal" && lastOne && <LastOneReveal result={lastOne} />}
           {stage === "final" && (
             <div className="w-full max-w-5xl">
-              <p className="mb-4 text-center font-serif text-lg text-gold-light/90">獲得した宝物</p>
+              <MascotSays className="mb-3">{RARITY[bestNormal].order >= RARITY.SR.order || lastOne ? "やったね！おめでとう！" : "おめでとう！また遊んでね"}</MascotSays>
+              <p className="mb-4 text-center font-serif text-lg text-gold-light/90">獲得した景品</p>
               {draw.count === 100 && <RarityCounts counts={draw.rarity_counts} animate={false} />}
               <div className="mt-5">
                 <ResultGrid results={draw.results} onSelect={setSelected} dense={draw.count === 100} />
@@ -145,6 +172,7 @@ export default function GachaCeremony({
       </div>
 
       {/* 操作 */}
+      {!instant && <SoundToggle />}
       {showSkip && (
         <button
           onClick={skip}
@@ -224,5 +252,23 @@ export default function GachaCeremony({
         )}
       </Modal>
     </div>
+  );
+}
+
+/** 効果音のオン・オフ（ブラウザに保存） */
+function SoundToggle() {
+  const [on, setOn] = useSound();
+  return (
+    <button
+      onClick={() => setOn(!on)}
+      aria-pressed={on}
+      aria-label={on ? "効果音をオフにする" : "効果音をオンにする"}
+      className="absolute left-4 top-[max(1rem,env(safe-area-inset-top))] z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-night/60 text-moon/80 backdrop-blur transition hover:border-gold/50 hover:text-gold-light"
+    >
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+        <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke="none" />
+        {on ? <path d="M15.5 9a4 4 0 010 6M18 6.5a7.5 7.5 0 010 11" /> : <path d="M16 9.5l5 5M21 9.5l-5 5" />}
+      </svg>
+    </button>
   );
 }

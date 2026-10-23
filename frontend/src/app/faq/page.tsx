@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageTitle, Panel } from "@/components/ui";
+import { SITE } from "@/lib/site";
 
 export const metadata: Metadata = { title: "よくある質問・はじめての方へ" };
 
@@ -32,7 +33,7 @@ export default function FaqPage() {
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
       <PageTitle en="GUIDE & FAQ" title="はじめての方へ・よくある質問" />
       <Panel className="mb-6">
-        <h2 id="guide" className="scroll-mt-24 font-serif text-xl font-bold text-gold-light">わくわくガチャの楽しみ方</h2>
+        <h2 id="guide" className="scroll-mt-24 font-serif text-xl font-bold text-gold-light">{SITE.name}の楽しみ方</h2>
         <ol className="mt-4 space-y-4">
           {GUIDE.map(([t, d], i) => (
             <li key={t} className="flex gap-4">

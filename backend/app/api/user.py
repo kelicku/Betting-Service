@@ -76,8 +76,8 @@ async def list_gachas(db: DB):
         gachas = await load_gachas(db, published_only=True)
         awarded = await awarded_gacha_ids(db, [g.id for g in gachas])
         out = [gacha_summary(g, awarded) for g in gachas]
-        # 開催中を先に表示
-        return sorted(out, key=lambda s: (not s.is_open,))
+        # 開催中を先に、完売したガチャは自動でいちばん下へ（同じ区分の中は管理画面の表示順のまま）
+        return sorted(out, key=lambda s: (s.remaining is not None and s.remaining <= 0, not s.is_open))
 
     # アクセス集中に備えて 1 秒だけキャッシュ（抽選の直後はそのワーカーのキャッシュを消す）
     return await cache.cached("gachas:list", 1.0, load)
@@ -190,10 +190,12 @@ async def claim_mission(mission_id: int, user: VerifiedUser, db: DB):
 
 
 @router.get("/offers", response_model=list[OfferOut], tags=["チケット獲得"])
-async def list_offers(user: CurrentUser, db: DB, kind: Literal["ad", "survey", "video"] | None = None):
+async def list_offers(user: CurrentUser, request: Request, db: DB, kind: Literal["ad", "survey", "video"] | None = None):
     q = select(Offer).where(Offer.is_active.is_(True))
     video_used = await offers.video_views_today(db, user.id)
     video_limit = await offers.video_daily_limit(db)
+    ip, ip_limit = client_ip(request), await offers.video_ip_daily_limit(db)
+    ip_reached = bool(ip and ip_limit > 0 and await offers.video_views_today_by_ip(db, ip) >= ip_limit)
     if kind:
         q = q.where(Offer.kind == kind)
     out = []
@@ -210,6 +212,7 @@ async def list_offers(user: CurrentUser, db: DB, kind: Literal["ad", "survey", "
             is_test=o.is_test, earned_count=earned, per_user_limit=o.per_user_limit, ends_at=o.ends_at,
             daily_used=video_used if o.kind == "video" else None,
             daily_limit=video_limit if o.kind == "video" else None,
+            ip_limit_reached=ip_reached and o.kind == "video",
         ))
     return out
 

@@ -117,8 +117,9 @@ async def make_client():
 
     clients: list[httpx.AsyncClient] = []
 
-    async def factory() -> Client:
-        http = httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://testserver")
+    async def factory(ip: str = "127.0.0.1") -> Client:
+        # ip：アクセス元の IP アドレス（同じネットワークからの上限の確認用）
+        http = httpx.AsyncClient(transport=httpx.ASGITransport(app=app, client=(ip, 123)), base_url="http://testserver")
         clients.append(http)
         return Client(http)
 

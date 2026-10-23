@@ -268,6 +268,8 @@ class OfferOut(BaseModel):
     # 動画リワード広告のみ：今日の視聴回数と 1 日の上限（すべての動画案件の合計）
     daily_used: int | None = None
     daily_limit: int | None = None
+    # 同じ IP アドレス（同じ Wi-Fi など）からの動画視聴が今日の合計上限に達している
+    ip_limit_reached: bool = False
 
 
 class NotificationOut(ORM):

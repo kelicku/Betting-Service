@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { PrizeCard, Sparkles } from "@/components/PrizeCard";
 import { RarityBadge, Tabs, cx } from "@/components/ui";
 import { RARITY, RARITIES } from "@/lib/format";
+import { playTick } from "@/lib/sound";
 import type { DrawResult, Rarity } from "@/lib/types";
 
 /** レアリティに応じた背景の光（N: 銀 / R: 青 / SR: 紫 / SSR: 金と粒子） */
@@ -112,7 +113,10 @@ export function MultiReveal({ results, skipAll, onDone, onSelect }: { results: D
     const next = normal[shown];
     // レア景品は少し間を置いて特別な光を見せる
     const wait = shown === 0 ? 300 : next && (next.rarity === "SSR" || next.rarity === "SR") ? 900 : 320;
-    const t = setTimeout(() => setShown((s) => s + 1), wait);
+    const t = setTimeout(() => {
+      if (next) playTick(next.rarity);
+      setShown((s) => s + 1);
+    }, wait);
     return () => clearTimeout(t);
   }, [shown, done, normal]);
 

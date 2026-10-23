@@ -21,6 +21,7 @@ from app.schemas import (
 from app.services import auth as auth_svc
 from app.services import points, tickets
 from app.services import sms as sms_svc
+from app.services.audit import client_ip
 
 router = APIRouter(prefix="/auth", tags=["認証"])
 
@@ -57,10 +58,10 @@ async def csrf(response: Response):
     "/register", response_model=Message, status_code=202,
     dependencies=[rate_limit("register", 5, 3600)],
 )
-async def register(body: RegisterIn, db: DB):
+async def register(body: RegisterIn, request: Request, db: DB):
     if not body.agree_terms:
         raise AppError("terms_required", "利用規約とプライバシーポリシーへの同意が必要です。")
-    await auth_svc.register(db, body.email, body.password, body.display_name, body.invite_code)
+    await auth_svc.register(db, body.email, body.password, body.display_name, body.invite_code, ip=client_ip(request))
     return Message(message="確認メールを送信しました。メール内のリンクを開いて登録を完了してください。")
 
 

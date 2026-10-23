@@ -119,7 +119,8 @@ const setSetting = async (v) => {
   await sleep(6000);
   return r;
 };
-await setSetting({ sms_verification_required: false, video_daily_limit: 2, signup_bonus_tickets: 10, signup_bonus_points: 1000, referral_inviter_tickets: 10, referral_invitee_tickets: 5 });
+// 確認はすべて同じ PC（同じ IP アドレス）から行うため、IP アドレスごとの上限は確認する手順以外では無効にしておく
+await setSetting({ sms_verification_required: false, video_daily_limit: 2, signup_bonus_tickets: 10, signup_bonus_points: 1000, referral_inviter_tickets: 10, referral_invitee_tickets: 5, video_ip_daily_limit: 0, register_ip_daily_limit: 0 });
 
 // ── 1. 公開ページ ───────────────────────────────────────
 const guest = await newUserPage(browser);
@@ -135,7 +136,7 @@ await step("公開ページがすべて表示される（未ログイン）", as
 await step("トップページ：キャッチコピー・ピックアップガチャ（1回 1枚）・景品・交換先", async () => {
   await guest.goto(BASE + "/", { waitUntil: "load" });
   const t = await guest.locator("main").innerText();
-  for (const w of ["遊んで", "ピックアップガチャ", "豪華な景品ラインナップ", "遊び方", "人気のポイント交換先", "新規会員登録で"]) assert(t.includes(w), `「${w}」がない`);
+  for (const w of ["遊んで", "ピックアップガチャ", "豪華な景品ラインナップ", "遊び方", "人気のポイント交換先", "新規会員登録で", "いっしょにお宝をさがそう！"]) assert(t.includes(w), `「${w}」がない`);
   assert(/1回\s*1\s*枚/.test(t), "ガチャの価格が「1回 1枚」になっていない");
 });
 await step("未ログインでガチャを引く → 新規登録画面（特典を表示）→ 登録・メール確認のあと同じガチャへ戻れる", async () => {
@@ -163,6 +164,18 @@ await step("未ログインでガチャを引く → 新規登録画面（特典
   const back = await p.getByRole("link", { name: "さっそくガチャを引く" }).getAttribute("href");
   assert(back === "/gacha/digital-gift", `確認後の戻り先が違う（${back}）`);
   await p.context().close();
+});
+
+await step("SNS で共有したときのカード（画像・タイトル）と、ガチャに「終了まで」の表示がない", async () => {
+  const html = await (await fetch(BASE + "/")).text();
+  const meta = (prop) => html.match(new RegExp(`<meta (?:property|name)="${prop}" content="([^"]*)"`))?.[1];
+  assert(/^https?:\/\/.+\/og\.jpg$/.test(meta("og:image") ?? ""), `og:image が絶対 URL でない（${meta("og:image")}）`);
+  assert(meta("twitter:card") === "summary_large_image", "twitter:card がない");
+  assert((await fetch(BASE + "/og.jpg")).status === 200, "共有用の画像が表示できない");
+  const gh = await (await fetch(BASE + "/gacha/digital-gift")).text();
+  assert(gh.includes('property="og:title" content="デジタルギフトガチャ｜'), "ガチャのページの共有タイトルがない");
+  await guest.goto(BASE + "/gacha/digital-gift", { waitUntil: "load" });
+  assert(!(await guest.locator("main").innerText()).includes("終了まで"), "「終了まで」が表示されている");
 });
 
 // ── 2. 会員登録・メール確認・ログイン・パスワード再設定 ────────────
@@ -265,6 +278,33 @@ await step("動画リワード広告：1日の上限（2回に設定）で、画
   await A.getByRole("button", { name: "今日の上限に達しました" }).first().waitFor({ timeout: 10000 });
   await A.getByText("今日の視聴 2/2回").first().waitFor({ timeout: 5000 });
 });
+await step("複数アカウント対策：同じネットワーク（IP）からの動画視聴は、別のアカウントでも合計の上限で止まる", async () => {
+  await setSetting({ video_ip_daily_limit: 2 }); // A がこの IP から 2 回視聴済み
+  const video = (await api(B, "GET", "/offers")).body.find((o) => o.kind === "video");
+  assert(video.ip_limit_reached === true && video.daily_used === 0, `B の表示が想定と違う（${JSON.stringify(video)}）`);
+  const r = await api(B, "POST", `/offers/${video.id}/start`);
+  assert(r.status === 409 && r.body.error.code === "video_ip_daily_limit", `別アカウントで開始できてしまう（${r.status}）`);
+  await B.goto(BASE + "/earn", { waitUntil: "load" });
+  await B.getByText("同じネットワーク（Wi-Fi など）からの視聴が今日の上限に達しました").first().waitFor({ timeout: 10000 });
+  await B.getByRole("button", { name: "今日の上限に達しました" }).first().waitFor({ timeout: 5000 });
+  await setSetting({ video_ip_daily_limit: 0 });
+  assert((await api(B, "GET", "/offers")).body.find((o) => o.kind === "video").ip_limit_reached === false, "0 にしても制限が解除されない");
+});
+await step("複数アカウント対策：同じネットワーク（IP）からの新規登録は 1 日の上限で止まり、画面に理由が出る", async () => {
+  await setSetting({ register_ip_daily_limit: 1 }); // この IP からは今日すでに登録済み
+  const p = await newUserPage(browser);
+  await p.goto(BASE + "/register", { waitUntil: "load" });
+  await p.waitForLoadState("networkidle").catch(() => {});
+  const form = p.locator("main form");
+  await form.getByLabel("ニックネーム").fill("QA複垢");
+  await form.getByLabel("メールアドレス").fill(`qa-ip-${RUN}@example.com`);
+  await form.getByLabel("パスワード").fill("qaPass123");
+  await form.locator('input[type="checkbox"]').check();
+  await form.getByRole("button", { name: "登録して確認メールを受け取る" }).click();
+  await p.getByText("同じネットワーク（Wi-Fi など）からの新規登録が、今日の上限に達しました").waitFor({ timeout: 10000 });
+  await p.context().close();
+  await setSetting({ register_ip_daily_limit: 0 });
+});
 
 // ── 5. クーポンコード ────────────────────────────────────
 await step("クーポン（使い捨て型）：管理画面で発行 → マイページで入力 → チケット加算・2回目は不可", async () => {
@@ -293,7 +333,13 @@ await step("ガチャ 1回：画面から引く → 結果表示、チケット 
   await A.goto(BASE + "/gacha/digital-gift", { waitUntil: "load" });
   await A.getByRole("button", { name: /^ガチャを引く/ }).first().click();
   await A.getByRole("button", { name: "引く", exact: true }).click();
-  await A.getByText("獲得した宝物").waitFor({ timeout: 30000 });
+  await A.getByText("獲得した景品").waitFor({ timeout: 30000 });
+  // 効果音のオン・オフ（ブラウザに保存）と、キャラクターの吹き出し
+  await A.getByText(/おめでとう/).first().waitFor({ timeout: 5000 });
+  await A.getByRole("button", { name: "効果音をオフにする" }).click();
+  await A.getByRole("button", { name: "効果音をオンにする" }).waitFor({ timeout: 3000 });
+  assert((await A.evaluate(() => localStorage.getItem("wk_sound"))) === "off", "効果音の設定が保存されない");
+  await A.getByRole("button", { name: "効果音をオンにする" }).click();
   const m1 = await me(A);
   assert(m1.balance === m0.balance - 1, `チケットが ${m0.balance - m1.balance} 枚減った（期待 1）`);
   const d = (await api(A, "GET", "/draws?per_page=1")).body.items[0];
@@ -378,6 +424,11 @@ asyncio.run(m())`);
   assert(d.has_last_one, "ラストワン賞が付与されていない");
   const sold = await api(A, "POST", `/gachas/${g.id}/draw`, { count: 1, idempotency_key: `qa-lo4-${RUN}` });
   assert(sold.status === 409, "完売後も引けてしまう");
+  // 完売したガチャは一覧のいちばん下へ
+  await sleep(1200);
+  const list = (await api(A, "GET", "/gachas")).body;
+  const firstSold = list.findIndex((x) => x.remaining === 0);
+  assert(firstSold >= 0 && list.slice(firstSold).every((x) => x.remaining === 0), `完売したガチャが下に移動していない（${list.map((x) => x.slug + ":" + x.remaining).join(", ")}）`);
   py(`
 import asyncio
 from app.core.db import SessionLocal
@@ -497,10 +548,16 @@ await step("管理画面：当選ランクに演出動画をアップロード �
     await panel.getByRole("button", { name: "保存する" }).click();
     await sleep(800);
   }
-  const ranks = (await api(A, "GET", "/ranks")).body;
+  // 当選ランクの設定は各サーバープロセスで最大 5 秒キャッシュされるため、反映を待つ
+  let ranks = [];
+  for (let i = 0; i < 16 && !(ranks.length && ranks.every((r) => r.video_url)); i++) {
+    if (i) await sleep(500);
+    ranks = (await api(A, "GET", "/ranks")).body;
+  }
   assert(ranks.every((r) => r.video_url), "動画が保存されていない");
   results.push({ name: "（演出動画：管理画面で 4 ランクに保存）", ok: true, note: "", ms: 0 });
   console.log("   … 管理画面での保存 OK、スマートフォンでガチャを引きます");
+  await sleep(6000); // すべてのサーバープロセスで当選ランクのキャッシュ（最大 5 秒）が切り替わるのを待つ
   const mobile = await newUserPage(browser, { ...devices["Pixel 7"] });
   await api(mobile, "POST", "/auth/login", { email: emailA, password: "qaPass456" });
   await mobile.evaluate(() => localStorage.setItem("hf_motion_level", "auto"));
@@ -513,7 +570,7 @@ await step("管理画面：当選ランクに演出動画をアップロード �
   await sleep(800);
   const v = await mobile.evaluate(() => { const e = document.querySelector("video"); return e && { paused: e.paused, muted: e.muted, h: e.videoHeight }; });
   assert(v && !v.paused && v.h === 640, `動画が再生されていない（${JSON.stringify(v)}）`);
-  await mobile.getByText("獲得した宝物").waitFor({ timeout: 15000 });
+  await mobile.getByText("獲得した景品").waitFor({ timeout: 15000 });
   await mobile.context().close();
   for (const r of ranks) await api(admin, "PUT", `/admin/ranks/${r.rarity}`, { label: r.label, video_url: null, logo_url: null });
   return "Chrome・スマートフォン表示";
@@ -569,6 +626,10 @@ await step("管理画面：会員詳細でチケット・ポイントの付与�
   const id = (await me(B)).id;
   const t0 = (await me(B)).balance;
   await admin.goto(BASE + `/admin/users/${id}`, { waitUntil: "load" });
+  // 複数アカウントの確認：同じ IP アドレスの会員（この確認は同じ PC から行うため、A などが表示される）
+  await admin.getByRole("heading", { name: /同じ IP アドレスの会員/ }).waitFor({ timeout: 10000 });
+  const sameIp = (await api(admin, "GET", `/admin/users/${id}/same-ip`)).body;
+  assert(sameIp.items.some((x) => x.id === (sameIp.items[0]?.id)) && sameIp.items.length > 0, "同じ IP アドレスの会員が表示されない");
   await admin.getByRole("button", { name: "チケット付与・調整" }).click();
   await admin.getByLabel("増減するチケット枚数").fill("3");
   await admin.getByLabel(/理由/).fill("QA テスト");
@@ -613,6 +674,8 @@ await step("スマートフォン（360px）で横にはみ出す画面がない
 await setSetting({
   sms_verification_required: settingsBefore.sms_verification_required ?? false,
   video_daily_limit: settingsBefore.video_daily_limit ?? 5,
+  video_ip_daily_limit: settingsBefore.video_ip_daily_limit ?? 15,
+  register_ip_daily_limit: settingsBefore.register_ip_daily_limit ?? 3,
 });
 await step("ブラウザのエラー・サーバーエラーがない", async () => {
   assert(!pageErrors.length, `画面のエラー ${pageErrors.length} 件：${pageErrors.slice(0, 2).join(" | ")}`);

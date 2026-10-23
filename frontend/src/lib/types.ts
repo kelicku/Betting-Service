@@ -167,6 +167,8 @@ export interface Offer {
   /** 動画リワード広告のみ：今日の視聴回数と 1 日の上限 */
   daily_used?: number | null;
   daily_limit?: number | null;
+  /** 同じネットワーク（Wi-Fi など）からの動画視聴が今日の合計上限に達している */
+  ip_limit_reached?: boolean;
 }
 
 export interface Mission {

@@ -14,6 +14,7 @@ import { Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { MagicCircleSVG } from "@/ceremony/Ceremony2D";
 import GachaCeremony from "@/ceremony/GachaCeremony";
 import RankVideo from "@/ceremony/RankVideo";
+import { MascotFace } from "@/components/Mascot";
 import { Alert, Button, Panel } from "@/components/ui";
 import { ApiError, api } from "@/lib/api";
 import { refreshMe, useMe, useRanks } from "@/lib/hooks";
@@ -148,10 +149,13 @@ function PlayInner() {
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-night-900 px-4">
       {state.kind === "loading" ? (
         <div className="flex flex-col items-center gap-6" role="status">
-          <motion.div className="h-48 w-48" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 0.9, scale: 1 }} transition={{ duration: 0.6 }}>
+          <motion.div className="relative h-48 w-48" initial={{ opacity: 0, scale: 0.6 }} animate={{ opacity: 0.9, scale: 1 }} transition={{ duration: 0.6 }}>
             <MagicCircleSVG color="#d8b976" className="h-full w-full" spin={6} />
+            <div className="absolute inset-0 flex items-center justify-center">
+              <MascotFace bounce className="w-24" />
+            </div>
           </motion.div>
-          <p className="font-serif text-gold-light/80">{state.note ?? "星々に願いを届けています…"}</p>
+          <p className="font-round font-bold text-gold-light/90">{state.note ?? "ガチャを回しています…"}</p>
         </div>
       ) : (
         <Panel strong className="w-full max-w-md space-y-5 text-center">

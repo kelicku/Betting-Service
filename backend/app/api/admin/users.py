@@ -18,6 +18,7 @@ from app.api.admin.schemas import (
 )
 from app.api.deps import DB, AdminUser, StaffUser
 from app.core.errors import AppError, NotFound
+from app.core.netkey import net_expr
 from app.models import (
     AdminAuditLog,
     AdminMessage,
@@ -28,6 +29,7 @@ from app.models import (
     ExchangeRequest,
     Gacha,
     Notification,
+    OfferClick,
     PointTransaction,
     PointWallet,
     Prize,
@@ -36,6 +38,7 @@ from app.models import (
     TicketWallet,
     User,
     UserPrize,
+    UserSession,
 )
 from app.models.enums import ExchangeStatus, PointKind, Role, TicketKind, UserStatus
 from app.services import auth as auth_svc
@@ -184,7 +187,7 @@ async def user_detail(user_id: int, _: StaffUser, db: DB):
         select(TicketTransaction).where(TicketTransaction.user_id == u.id).order_by(TicketTransaction.id.desc()).limit(20)
     )).scalars()
     return {
-        **row_dict(u, *USER_FIELDS, "failed_login_count", "locked_until"),
+        **row_dict(u, *USER_FIELDS, "failed_login_count", "locked_until", "signup_ip"),
         "wallet": {"balance": w.balance, "total_earned": w.total_earned, "total_spent": w.total_spent} if w else None,
         "point_wallet": {"balance": pw.balance, "total_earned": pw.total_earned, "total_spent": pw.total_spent} if pw else None,
         "recent_point_transactions": [row_dict(t, *TX_FIELDS) for t in ptxs],
@@ -197,6 +200,48 @@ async def user_detail(user_id: int, _: StaffUser, db: DB):
         "recent_transactions": [row_dict(t, *TX_FIELDS) for t in txs],
         "exchanges": await db.scalar(select(func.count()).select_from(ExchangeRequest).where(ExchangeRequest.user_id == u.id)),
     }
+
+
+def _ip_rows(since: datetime):
+    """会員と IP アドレスの組（登録時・ログイン・広告のクリック）。net は同じネットワークの単位（IPv6 は /64）。"""
+    base = (
+        select(User.id.label("user_id"), User.signup_ip.label("ip"), User.created_at.label("at")).where(User.signup_ip.is_not(None))
+        .union_all(
+            select(UserSession.user_id, UserSession.ip, UserSession.created_at).where(UserSession.ip.is_not(None), UserSession.created_at >= since),
+            select(OfferClick.user_id, OfferClick.ip, OfferClick.created_at).where(OfferClick.ip.is_not(None), OfferClick.created_at >= since),
+        )
+        .subquery()
+    )
+    return select(base.c.user_id, base.c.ip, base.c.at, net_expr(base.c.ip).label("net")).subquery()
+
+
+@router.get("/users/{user_id}/same-ip")
+async def same_ip_users(user_id: int, _: StaffUser, db: DB, days: int = Query(30, ge=1, le=365)):
+    """複数アカウントの確認：この会員と同じネットワーク（IPv4 は同じアドレス、IPv6 は同じ /64）を使った会員
+    （登録・ログイン・広告のクリック、直近 days 日）。
+    スマートフォンの回線や家族・お店の Wi-Fi では、別の人でも同じ IP になることがあるため、停止の前に内容を確認すること。"""
+    u = await _user(db, user_id)
+    rows = _ip_rows(datetime.now(UTC) - timedelta(days=days))
+    mine = select(rows.c.net).where(rows.c.user_id == u.id).distinct().scalar_subquery()
+    found = (await db.execute(
+        select(rows.c.user_id, rows.c.ip, func.max(rows.c.at))
+        .where(rows.c.net.in_(mine), rows.c.user_id != u.id)
+        .group_by(rows.c.user_id, rows.c.ip)
+    )).all()
+    my_ips = sorted({ip for (ip,) in (await db.execute(select(rows.c.ip).where(rows.c.user_id == u.id).distinct())).all()})
+    by_user: dict[int, dict] = {}
+    for uid, ip, at in found:
+        e = by_user.setdefault(uid, {"ips": set(), "last_at": at})
+        e["ips"].add(ip)
+        e["last_at"] = max(e["last_at"], at)
+    users = {x.id: x for x in (await db.execute(select(User).where(User.id.in_(list(by_user))))).scalars()} if by_user else {}
+    items = [
+        {**row_dict(users[uid], "id", "email", "display_name", "status", "created_at", "phone_verified_at"),
+         "shared_ips": sorted(e["ips"]), "last_seen_at": e["last_at"]}
+        for uid, e in sorted(by_user.items(), key=lambda kv: kv[1]["last_at"], reverse=True)
+        if uid in users
+    ][:100]
+    return {"user_id": u.id, "days": days, "ips": my_ips, "items": items}
 
 
 @router.post("/users/{user_id}/suspend")

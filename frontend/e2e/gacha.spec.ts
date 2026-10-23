@@ -34,7 +34,7 @@ test("ログインしてガチャを引くとポイントが消費され結果�
   await page.goto(GACHA);
   await page.getByRole("button", { name: /^ガチャを引く/ }).first().click();
   await page.getByRole("button", { name: "引く", exact: true }).click();
-  await expect(page.getByText("獲得した宝物")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText("獲得した景品")).toBeVisible({ timeout: 20_000 });
   await page.getByRole("button", { name: "抽選結果の詳細" }).click();
   await expect(page.getByRole("heading", { name: "抽選結果" })).toBeVisible();
   expect(await balanceOf(page)).toBe(before - COST);
@@ -46,7 +46,7 @@ test("再読み込みしても同じ抽選が二重に実行されない", async
   await page.getByRole("button", { name: /^ガチャを引く/ }).first().click();
   await page.getByRole("button", { name: "引く", exact: true }).click();
   await page.waitForURL("**/play**");
-  await expect(page.getByText("獲得した宝物")).toBeVisible({ timeout: 20_000 });
+  await expect(page.getByText("獲得した景品")).toBeVisible({ timeout: 20_000 });
   await page.reload();
   // 実行済みのキーは結果画面へ誘導される
   await expect(page).toHaveURL(/\/draws\//, { timeout: 20_000 });

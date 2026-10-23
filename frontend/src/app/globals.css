@@ -615,3 +615,32 @@ main:has(.home-page) { background: #fff8f1; }
 @media (min-width: 768px) {
   .menu-panel { max-height: calc(100dvh - 7rem); }
 }
+
+/* キャラクター（猫）の吹き出し・ぴょこぴょこ */
+.mascot-bubble::before {
+  content: "";
+  position: absolute;
+  left: -7px;
+  bottom: 10px;
+  border: 7px solid transparent;
+  border-right-color: #fff;
+  border-left: 0;
+}
+.mascot-bounce { animation: mascot-bounce 0.9s ease-in-out infinite; }
+@keyframes mascot-bounce {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-8px) rotate(3deg); }
+}
+.hero-bubble {
+  background: #fff;
+  box-shadow: 0 0 0 3px #ffc2d8, 0 10px 22px -10px rgba(240, 33, 94, 0.6);
+}
+.hero-bubble::after {
+  content: "";
+  position: absolute;
+  bottom: -11px;
+  right: 30%;
+  border: 11px solid transparent;
+  border-top-color: #fff;
+  border-bottom: 0;
+}

@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.core import mail
+from app.core.config import settings
 from app.core.errors import AppError, NotFound
 from app.core.security import decrypt_pii, encrypt_pii
 from app.models import (
@@ -242,7 +243,7 @@ async def transition(
     owner = await db.get(User, req.user_id)
     await db.commit()
     if owner:
-        await mail.send_mail(owner.email, "【わくわくガチャ】景品の発送申請の状況が更新されました", f"{owner.display_name} 様\n\n{body}")
+        await mail.send_mail(owner.email, f"【{settings.app_name}】景品の発送申請の状況が更新されました", f"{owner.display_name} 様\n\n{body}")
     return req
 
 

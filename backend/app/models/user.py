@@ -33,6 +33,8 @@ class User(Base, TimestampMixin):
     invite_code: Mapped[str | None] = mapped_column(String(16), unique=True)
     referred_by_id: Mapped[int | None] = mapped_column(ForeignKey("users.id", ondelete="SET NULL"), index=True)
     referral_rewarded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    # 登録時の IP アドレス（同じネットワークからの新規登録の上限・複数アカウントの確認に使う）
+    signup_ip: Mapped[str | None] = mapped_column(String(64))
 
     wallet: Mapped["TicketWallet"] = relationship(back_populates="user", uselist=False, lazy="raise")
 
@@ -68,7 +70,7 @@ class UserSession(Base):
     last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
-    ip: Mapped[str | None] = mapped_column(String(64))
+    ip: Mapped[str | None] = mapped_column(String(64), index=True)
     user_agent: Mapped[str | None] = mapped_column(String(300))
 
 
