@@ -90,7 +90,7 @@ function Content({ me }: { me: Me }) {
                 key={l.v}
                 onClick={() => setLevel(l.v)}
                 aria-pressed={on}
-                className={cx("rounded-xl border p-4 text-left transition", on ? "border-gold/60 bg-gold/10 shadow-glow" : "border-veil/10 hover:border-veil/25")}
+                className={cx("p-4 text-left transition", on ? "sh-bracket bg-gold/10 shadow-[inset_0_0_0_2px_rgba(231,181,74,0.7)]" : "border-2 border-veil/10 hover:border-veil/25")}
               >
                 <p className={cx("font-bold", on && "text-gold-light")}>{l.t}</p>
                 <p className="mt-1 text-xs text-moon/55">{l.d}</p>
@@ -138,9 +138,9 @@ function Content({ me }: { me: Me }) {
       </Panel>
 
       <Panel>
-        <div className="mb-4 flex items-center justify-between">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
           <h2 className="font-serif font-bold text-gold-light">ログイン中の端末</h2>
-          <Button size="sm" variant="subtle" onClick={revokeOthers}>他の端末をすべてログアウト</Button>
+          <Button size="sm" variant="subtle" className="shrink-0" onClick={revokeOthers}>他の端末をすべてログアウト</Button>
         </div>
         <ul className="divide-y divide-veil/5 text-sm">
           {sessions?.map((s) => (

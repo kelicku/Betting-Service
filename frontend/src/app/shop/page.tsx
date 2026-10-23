@@ -40,7 +40,7 @@ function ItemCard({ it, onPick, balance }: { it: ShopItem; onPick: () => void; b
         </p>
         {it.stock_remaining != null && !it.sold_out && <p className="text-xs text-moon/50">残り {it.stock_remaining.toLocaleString("ja-JP")} 個</p>}
         <div className="mt-auto pt-3">
-          <Button size="sm" className="w-full" disabled={disabled} onClick={onPick} variant={short ? "ghost" : "gold"}>
+          <Button size="sm" className="w-full !px-1 text-xs tracking-normal sm:!px-3.5 sm:text-sm sm:tracking-wide" disabled={disabled} onClick={onPick} variant={short ? "ghost" : "gold"}>
             {it.limit_reached ? "上限に達しました" : it.sold_out ? "在庫切れ" : short ? "ポイント不足" : "ポイント交換する"}
           </Button>
         </div>

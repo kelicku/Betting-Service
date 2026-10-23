@@ -160,7 +160,6 @@ export default function GachaCeremony({
           {stage === "lastone-reveal" && lastOne && <LastOneReveal result={lastOne} />}
           {stage === "final" && (
             <div className="w-full max-w-5xl">
-              <MascotSays className="mb-3">{RARITY[bestNormal].order >= RARITY.SR.order || lastOne ? "やったね！おめでとう！" : "おめでとう！また遊んでね"}</MascotSays>
               <p className="mb-4 text-center font-serif text-lg text-gold-light/90">獲得した景品</p>
               {draw.count === 100 && <RarityCounts counts={draw.rarity_counts} animate={false} />}
               <div className="mt-5">
@@ -196,6 +195,10 @@ export default function GachaCeremony({
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: stage === "lastone-reveal" ? 2.2 : 0.3 }}
           >
+            {/* キャラクターのひと言（演出の設定に関わらず、結果のあとに表示） */}
+            <MascotSays size="sm" className="mb-2">
+              {RARITY[bestNormal].order >= RARITY.SR.order || lastOne ? "やったね！おめでとう！" : "おめでとう！また遊んでね"}
+            </MascotSays>
             <div className="mx-auto flex max-w-3xl flex-wrap items-center justify-center gap-2 sm:gap-3">
               {(draw.points_won ?? 0) > 0 && (
                 <span className="w-full text-center font-round text-base font-bold text-gold-light sm:order-first sm:w-auto">

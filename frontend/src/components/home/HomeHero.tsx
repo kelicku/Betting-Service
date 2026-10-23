@@ -101,7 +101,7 @@ export default function HomeHero() {
       >
         {/* キャラクターの吹き出し：きらめく雲（文字がひとつずつ弾む） */}
         <motion.div
-          className="absolute left-[12%] top-[-7%] z-10 sm:left-[8%] lg:left-[12%] lg:top-[-5%]"
+          className="absolute left-[12%] top-[-7%] z-10 sm:left-auto sm:right-[12%] sm:top-[-15%] lg:left-[12%] lg:right-auto lg:top-[-5%]"
           initial={{ opacity: 0, scale: 0.4, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
           transition={{ delay: 1.1, type: "spring", stiffness: 220, damping: 13 }}

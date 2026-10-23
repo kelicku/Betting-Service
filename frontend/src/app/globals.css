@@ -926,3 +926,6 @@ main:has(.home-page) { background: #fff8f1; }
     radial-gradient(1px 1px at 30% 48%, #fff 50%, transparent 51%),
     linear-gradient(180deg, #241a5c 0%, #3b2386 55%, #5a2f8f 100%);
 }
+
+/* 狭い枠に 3 つ並べるボタン（ガチャ詳細・スマートフォン下部の帯）：形の余白を小さくする */
+.btn-compact:is(.sh-chevron, .sh-hex, .sh-tag, .sh-arrow, .sh-para) { --c: 8px; padding-left: 12px !important; padding-right: 10px !important; }

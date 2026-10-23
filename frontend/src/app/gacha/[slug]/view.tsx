@@ -83,7 +83,7 @@ export default function GachaDetailView({ initial }: { initial: GachaDetail }) {
             variant={n === 1 ? "gold" : n === 10 ? "purple" : "ghost"}
             disabled={!!r && !disabledByTickets}
             onClick={() => (disabledByTickets ? router.push("/earn") : start(n))}
-            className={cx("w-full", compact && "flex-col !gap-0 px-1 text-xs leading-tight")}
+            className={cx("w-full", compact && "btn-compact flex-col !gap-0 !px-1 text-xs leading-tight tracking-normal")}
             aria-label={`${LABEL[n]}（チケット${g.ticket_cost * n}枚）`}
           >
             {compact ? (

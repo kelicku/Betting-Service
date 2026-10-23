@@ -97,6 +97,7 @@ cd backend && .venv/bin/pytest            # 111 件（同時アクセス・二�
 cd frontend && npm test                    # 単体テスト
 cd frontend && npx playwright test         # E2E（起動中の環境に対して実行）
 node tools/qa/full-check.mjs               # 全機能の動作確認（Google Chrome で会員・管理者の操作を一通り。開発環境専用）
+node tools/qa/feature-check.mjs            # 2026-10-23 にお知らせした 10 項目の詳しい確認（完売の並び・効果音・ボタンの形・宝箱など。開発環境専用）
 ```
 
 ## 公開前に必要な確認
