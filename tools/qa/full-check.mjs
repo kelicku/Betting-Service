@@ -120,6 +120,8 @@ const setSetting = async (v) => {
   await sleep(6000);
   return r;
 };
+// デモ用ガチャの口数が少なくなっていたら補充する（確認のたびに口数が減るため）
+console.log("   " + execSync("docker compose exec -T backend python -m app.cli restock-demo 200", { cwd: root }).toString().trim());
 // 確認はすべて同じ PC（同じ IP アドレス）から行うため、IP アドレスごとの上限は確認する手順以外では無効にしておく
 await setSetting({ sms_verification_required: false, video_daily_limit: 2, signup_bonus_tickets: 10, signup_bonus_points: 1000, referral_inviter_tickets: 10, referral_invitee_tickets: 5, video_ip_daily_limit: 0, register_ip_daily_limit: 0 });
 

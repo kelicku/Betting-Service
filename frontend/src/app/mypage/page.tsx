@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useState } from "react";
 import useSWR from "swr";
 import CouponBox from "@/components/CouponBox";
 import { RequireAuth } from "@/components/Guard";
 import { useToast } from "@/components/Toast";
-import { Alert, Button, Panel, PageTitle, Points, RarityBadge, Tickets } from "@/components/ui";
+import { TreasureChest } from "@/components/TreasureChest";
+import { Alert, Button, Panel, PageTitle, Points, RarityBadge, Tickets, cx } from "@/components/ui";
 import { ApiError, api, fetcher } from "@/lib/api";
 import { RARITIES, fmtDateTime } from "@/lib/format";
 import { refreshMe } from "@/lib/hooks";
@@ -14,39 +16,59 @@ import type { DrawSummary, Me, Page } from "@/lib/types";
 function DailyBonus() {
   const { data, mutate } = useSWR<{ claimed_today: boolean; streak: number; next_reward: number }>("/api/rewards/daily", fetcher);
   const toast = useToast();
+  const [burst, setBurst] = useState(0);
+  const [busy, setBusy] = useState(false);
   const claim = async () => {
+    setBusy(true);
     try {
       const r = await api<{ amount: number; streak: number; balance: number }>("/rewards/daily", { method: "POST" });
+      setBurst((b) => b + 1); // ふたが開いて金貨が飛び出す
       toast(`ログインボーナス：チケット${r.amount}枚を受け取りました（${r.streak}日連続）`);
       refreshMe({ balance: r.balance });
       mutate();
     } catch (e) {
       toast((e as ApiError).message, "error");
+    } finally {
+      setBusy(false);
     }
   };
   if (!data) return null;
+  const claimed = data.claimed_today;
+  // 今週の何日目まで受け取ったか（7 日ごとにリセット）
+  const filledDays = data.streak > 0 ? ((data.streak - 1) % 7) + 1 : 0;
   return (
-    <Panel strong className="relative overflow-hidden">
-      <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold/20 blur-3xl" />
-      <p className="font-display text-[11px] tracking-[0.35em] text-gold/70">DAILY BONUS</p>
-      <h2 className="mt-1 font-serif text-lg font-bold">毎日のログインボーナス</h2>
-      <div className="mt-4 flex items-center gap-1.5" aria-label={`連続${data.streak}日`}>
-        {Array.from({ length: 7 }).map((_, i) => {
-          const filled = i < data.streak % 7 || (data.streak > 0 && data.streak % 7 === 0);
-          return (
-            <span
-              key={i}
-              className={"flex h-8 flex-1 items-center justify-center rounded-lg border text-xs " + (filled ? "border-gold/60 bg-gold/20 text-gold-light shadow-glow" : "border-veil/10 text-moon/40")}
-            >
-              {i === 6 ? "★" : i + 1}
-            </span>
-          );
-        })}
+    <Panel strong className="overflow-hidden p-0">
+      <div className="bonus-stage relative isolate flex flex-col items-center overflow-hidden px-5 pb-4 pt-5 text-center">
+        <p className="font-display text-[11px] tracking-[0.35em] text-[#ffe08a]/80">DAILY BONUS</p>
+        <h2 className="mt-1 font-round text-lg font-black text-white">毎日のログインボーナス</h2>
+        <TreasureChest open={claimed} dim={claimed && burst === 0} burstKey={burst} className="mt-1" />
+        <p className="-mt-1 font-round text-sm font-bold text-[#ffe9a8]">
+          {claimed ? "本日のお宝は受け取り済み。また明日！" : `今日のお宝：チケット${data.next_reward}枚`}
+        </p>
       </div>
-      <p className="mt-2 text-xs text-moon/55">7日連続でボーナスが増えます（現在 {data.streak}日連続）</p>
-      <Button className="mt-4 w-full" disabled={data.claimed_today} onClick={claim}>
-        {data.claimed_today ? "本日は受け取り済みです" : `チケット${data.next_reward}枚を受け取る`}
-      </Button>
+      <div className="px-5 pb-5 pt-4">
+        <div className="flex items-center gap-1.5" aria-label={`連続${data.streak}日`}>
+          {Array.from({ length: 7 }).map((_, i) => {
+            const filled = i < filledDays;
+            const today = !claimed && i === filledDays % 7;
+            return (
+              <span
+                key={i}
+                className={cx(
+                  "sh-gem [--c:6px] flex h-9 flex-1 items-center justify-center font-round text-xs font-bold transition",
+                  filled ? "bg-[linear-gradient(180deg,#ffe58a,#f0a91e)] text-[#7a4a00]" : today ? "bg-[#fff2c4] text-[#c98a10] shadow-[inset_0_0_0_2px_#f6c445]" : "bg-veil/5 text-moon/40",
+                )}
+              >
+                {i === 6 ? "★" : i + 1}
+              </span>
+            );
+          })}
+        </div>
+        <p className="mt-2 text-xs text-moon/55">7日連続でボーナスが増えます（現在 {data.streak}日連続）</p>
+        <Button className="mt-4 w-full" disabled={claimed} loading={busy} onClick={claim}>
+          {claimed ? "本日は受け取り済みです" : `宝箱を開けてチケット${data.next_reward}枚を受け取る`}
+        </Button>
+      </div>
     </Panel>
   );
 }

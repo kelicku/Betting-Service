@@ -415,3 +415,26 @@ async def test_sms_rejects_international_numbers(client):
         r = await client.post("/api/phone/send-code", json={"phone": phone})
         assert r.status_code == 400 and r.json()["error"]["code"] == "invalid_phone"
     assert sms.outbox == [] or all(m.to.startswith("+81") for m in sms.outbox)
+
+
+async def test_handed_out_gift_code_is_never_given_again_even_if_order_is_deleted(make_client, db_session):
+    """会員（と申請）が削除されて order_id が空になっても、一度渡したコードを別の会員に渡さない。"""
+    from sqlalchemy import delete
+
+    from app.services import shop
+
+    it = await shop_item(cost=100, codes=["ONLY-ONE-CODE"])
+    a, b = await create_user(), await create_user()
+    await give_points(a.id, 500)
+    await give_points(b.id, 500)
+    ca, cb = await make_client(), await make_client()
+    await login_as(ca, a)
+    await login_as(cb, b)
+    r = await ca.post("/api/shop/orders", json={"item_id": it.id, "idempotency_key": key()})
+    assert r.status_code == 200 and r.json()["gift_code"] == "ONLY-ONE-CODE"
+    async with db_session() as db:
+        await db.execute(delete(User).where(User.id == a.id))  # 申請も一緒に削除され、コードの order_id は空になる
+        await db.commit()
+        assert (await shop.available_codes(db, [it.id])).get(it.id, 0) == 0
+    r = await cb.post("/api/shop/orders", json={"item_id": it.id, "idempotency_key": key()})
+    assert r.status_code == 200 and r.json()["status"] == "pending" and not r.json().get("gift_code")

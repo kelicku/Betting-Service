@@ -12,6 +12,7 @@ import { RARITY } from "@/lib/format";
 import { refreshMe, useMe } from "@/lib/hooks";
 import type { Rarity } from "@/lib/types";
 import { useToast } from "./Toast";
+import { TreasureChest } from "./TreasureChest";
 import { RarityBadge, cx } from "./ui";
 
 // ── 最近の当選 ─────────────────────────────────────────
@@ -197,7 +198,11 @@ export function BonusReminder() {
 
   return (
     <motion.div
-      className="bonus-reminder fixed bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-4 z-40 md:bottom-8 md:right-8"
+      // ガチャ詳細（スマートフォン）は画面下に「ガチャを引く」の帯があるため、その上に出す（ボタンを隠さない）
+      className={cx(
+        "bonus-reminder fixed right-4 z-40 md:bottom-8 md:right-8",
+        /^\/gacha\/[^/]+$/.test(path) ? "bottom-[calc(9.75rem+env(safe-area-inset-bottom))]" : "bottom-[calc(5.5rem+env(safe-area-inset-bottom))]",
+      )}
       initial={{ opacity: 0, y: 30, scale: 0.8 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ delay: 1.2, type: "spring", stiffness: 180, damping: 14 }}
@@ -212,33 +217,21 @@ export function BonusReminder() {
               /* ignore */
             }
           }}
-          className="absolute -right-1 -top-1 z-10 flex h-5 w-5 items-center justify-center rounded-full bg-night-800 text-[10px] text-moon/60 ring-1 ring-veil/15 hover:text-moon"
+          className="sh-diamond absolute -right-2 -top-2 z-10 flex h-6 w-6 items-center justify-center bg-night-800 text-[10px] text-moon/70 hover:text-moon"
           aria-label="閉じる"
         >
           ×
         </button>
-        <button onClick={claim} disabled={opening} className="group flex items-center gap-3 rounded-2xl border border-gold/50 bg-night-900/90 py-2.5 pl-2.5 pr-4 shadow-glow-lg backdrop-blur-xl" aria-label={`本日のログインボーナス（${data.next_reward}pt）を受け取る`}>
+        <button onClick={claim} disabled={opening} className="sh-tag sh-framed relative [--c:18px] [--fill:rgba(20,22,60,0.92)] group flex items-center gap-3 bg-gold/70 py-2.5 pr-5 backdrop-blur-xl" aria-label={`本日のログインボーナス（${data.next_reward}pt）を受け取る`}>
           <motion.span
             className="relative flex h-11 w-11 items-center justify-center"
-            animate={opening ? { rotate: [0, -12, 12, -8, 0], scale: [1, 1.2, 1.4, 0] } : { y: [0, -4, 0] }}
+            animate={opening ? { rotate: [0, -10, 10, -6, 0], scale: [1, 1.15, 1.3, 0] } : { y: [0, -3, 0] }}
             transition={opening ? { duration: 0.7 } : { duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
           >
-            <span className="absolute inset-0 rounded-full bg-gold/30 blur-md transition group-hover:bg-gold/50" />
-            <svg viewBox="0 0 40 40" className="relative h-10 w-10" aria-hidden>
-              <defs>
-                <linearGradient id="gift-g" x1="0" y1="0" x2="1" y2="1">
-                  <stop offset="0" stopColor="#8f6fe0" />
-                  <stop offset="1" stopColor="#3a2f7a" />
-                </linearGradient>
-              </defs>
-              <rect x="7" y="17" width="26" height="17" rx="2" fill="url(#gift-g)" stroke="#f3dfb3" strokeWidth="1" />
-              <rect x="5" y="12" width="30" height="7" rx="2" fill="#7654c8" stroke="#f3dfb3" strokeWidth="1" />
-              <rect x="18" y="12" width="4" height="22" fill="#f3dfb3" />
-              <path d="M20 12c-3-6-10-6-8-1 1 2 5 1 8 1zm0 0c3-6 10-6 8-1-1 2-5 1-8 1z" fill="none" stroke="#f3dfb3" strokeWidth="1.5" />
-            </svg>
+            <TreasureChest size="sm" open={opening} />
           </motion.span>
           <span className="text-left">
-            <span className="block text-[11px] text-moon/55">本日のログインボーナス</span>
+            <span className="block text-[11px] font-bold text-[#ffe9a8]/85">本日のログインボーナス</span>
             <span className="block font-serif text-sm font-bold text-gold-light">チケット{data.next_reward}枚を受け取る</span>
           </span>
         </button>
@@ -267,22 +260,22 @@ export function ScrollMoon() {
   }, [path]);
   if (path.startsWith("/admin") || /\/play/.test(path)) return null;
   // 読んだ割合だけピンクの輪が伸びる
-  const C = 2 * Math.PI * 21;
   return (
     <AnimatePresence>
       {p > 0.04 && (
         <motion.button
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="fixed bottom-8 left-6 z-40 hidden h-[3.25rem] w-[3.25rem] items-center justify-center rounded-full bg-white text-[#ff3b7f] shadow-[0_8px_20px_-8px_rgba(255,60,130,0.6)] md:flex"
+          className="sh-diamond fixed bottom-8 left-6 z-40 hidden h-[3.6rem] w-[3.6rem] items-center justify-center bg-white text-[#ff3b7f] md:flex"
           aria-label={`ページの先頭へ（${Math.round(p * 100)}%）`}
           initial={{ opacity: 0, scale: 0.6 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.6 }}
           whileHover={{ scale: 1.08 }}
         >
-          <svg viewBox="0 0 48 48" className="absolute inset-0 h-full w-full -rotate-90" aria-hidden>
-            <circle cx="24" cy="24" r="21" fill="none" stroke="#ffe0ec" strokeWidth="3" />
-            <circle cx="24" cy="24" r="21" fill="none" stroke="#ff3b7f" strokeWidth="3" strokeLinecap="round" strokeDasharray={C} strokeDashoffset={C * (1 - p)} />
+          <svg viewBox="0 0 48 48" className="absolute inset-0 h-full w-full" aria-hidden>
+            {/* ひし形の枠に沿って、読んだ割合だけ線が伸びる */}
+            <path d="M24 1.5L46.5 24 24 46.5 1.5 24z" fill="none" stroke="#ffe0ec" strokeWidth="3" />
+            <path d="M24 1.5L46.5 24 24 46.5 1.5 24z" fill="none" stroke="#ff3b7f" strokeWidth="3" pathLength={1} strokeDasharray={1} strokeDashoffset={1 - p} />
           </svg>
           <svg viewBox="0 0 24 24" className="relative h-6 w-6" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
             <path d="M6 14l6-6 6 6" />

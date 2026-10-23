@@ -33,7 +33,7 @@ function Chevron({ className }: { className?: string }) {
 
 function MoreLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="flex shrink-0 items-center gap-0.5 whitespace-nowrap rounded-full bg-white/80 px-3 py-1.5 font-round text-xs font-bold sm:gap-1 sm:px-4 sm:text-sm text-[#1d3fa8] shadow-[0_2px_8px_-4px_rgba(30,60,160,0.4)] transition hover:bg-white hover:text-[#ff3b7f] lg:text-[1.05rem]">
+    <Link href={href} className="sh-arrow [--c:10px] flex shrink-0 items-center gap-0.5 whitespace-nowrap bg-white/90 px-3 py-1.5 font-round text-xs font-bold shadow-[inset_0_0_0_2px_rgba(29,63,168,0.18)] sm:gap-1 sm:px-4 sm:text-sm text-[#1d3fa8] transition hover:bg-white hover:text-[#ff3b7f] lg:text-[1.05rem]">
       {children}
       <Chevron className="h-4 w-4" />
     </Link>
@@ -81,7 +81,7 @@ export function PromoCards({ signupTickets, signupPoints }: { signupTickets: num
               </p>
               <p className="text-[1rem] lg:text-[1.35rem]">プレゼント！</p>
             </div>
-            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-[linear-gradient(180deg,#ff5d8f,#f0215e)] text-white shadow-[0_4px_10px_-3px_rgba(240,33,94,0.7)] transition-transform group-hover:translate-x-1 lg:h-[3.1rem] lg:w-[3.1rem]">
+            <span className="sh-diamond flex h-12 w-12 shrink-0 items-center justify-center bg-[linear-gradient(180deg,#ff5d8f,#f0215e)] text-white transition-transform group-hover:translate-x-1 lg:h-14 lg:w-14">
               <Chevron className="h-6 w-6" />
             </span>
           </Link>
@@ -93,8 +93,8 @@ export function PromoCards({ signupTickets, signupPoints }: { signupTickets: num
               <p className="whitespace-nowrap text-[1.05rem] lg:text-[1.38rem]">毎日できる！</p>
               <p className="whitespace-nowrap text-[1.05rem] lg:text-[1.38rem]">無料でポイントをGET</p>
               <div className="mt-2 flex items-center gap-3">
-                <span className="rounded-full bg-[linear-gradient(180deg,#3f8bff,#1d5be0)] whitespace-nowrap px-5 py-1 text-[0.8rem] font-bold text-white shadow-[0_3px_8px_-3px_rgba(29,91,224,0.8)] lg:px-8 lg:py-1.5 lg:text-[0.95rem]">ミッション一覧へ</span>
-                <span className="flex h-8 w-8 items-center justify-center rounded-full border-2 border-[#cfe0ff] bg-white text-[#1d5be0] transition-transform group-hover:translate-x-1 lg:h-10 lg:w-10">
+                <span className="sh-trap whitespace-nowrap bg-[linear-gradient(180deg,#3f8bff,#1d5be0)] px-6 py-1 text-[0.8rem] font-bold text-white shadow-[inset_0_2px_0_rgba(255,255,255,0.45)] lg:px-9 lg:py-1.5 lg:text-[0.95rem]">ミッション一覧へ</span>
+                <span className="sh-gem [--c:6px] flex h-8 w-8 items-center justify-center bg-white text-[#1d5be0] shadow-[inset_0_0_0_2px_#cfe0ff] transition-transform group-hover:translate-x-1 lg:h-10 lg:w-10">
                   <svg viewBox="0 0 24 24" className="h-5 w-5" fill="currentColor" aria-hidden>
                     <path d="M5 11h9.2l-3.6-3.6L12 6l6 6-6 6-1.4-1.4 3.6-3.6H5z" />
                   </svg>
@@ -109,7 +109,7 @@ export function PromoCards({ signupTickets, signupPoints }: { signupTickets: num
             <div className="flex-1 font-round font-black leading-snug text-[#e8343a]">
               <p className="whitespace-nowrap text-[1.05rem] lg:text-[1.38rem]">貯めたポイントで</p>
               <p className="whitespace-nowrap text-[1.05rem] lg:text-[1.38rem]">デジタルギフトと交換！</p>
-              <span className="mt-2 inline-flex items-center gap-2 rounded-full bg-[linear-gradient(180deg,#ffb23f,#f08a12)] px-6 py-1 text-[0.8rem] font-bold text-white shadow-[0_3px_8px_-3px_rgba(240,138,18,0.8)] lg:px-12 lg:py-1.5 lg:text-[1rem]">
+              <span className="price-tag sh-tag mt-2 inline-flex items-center gap-2 bg-[linear-gradient(180deg,#ffb23f,#f08a12)] py-1 pr-6 text-[0.8rem] font-bold text-white shadow-[inset_0_2px_0_rgba(255,255,255,0.45)] lg:py-1.5 lg:pr-10 lg:text-[1rem]">
                 ポイント交換へ
                 <Chevron className="h-3.5 w-3.5" />
               </span>
@@ -170,10 +170,10 @@ export function PickupGachas({ gachas }: { gachas: GachaSummary[] }) {
           </div>
           {gachas.length > 1 && (
             <>
-              <button onClick={() => scroll(-1)} aria-label="前のガチャ" className="carousel-arrow absolute left-[-6px] top-[42%] z-10 hidden h-16 w-16 -translate-y-1/2 items-center justify-center rounded-full sm:flex lg:left-[-12px] min-[1400px]:left-[-35px]">
+              <button onClick={() => scroll(-1)} aria-label="前のガチャ" className="carousel-arrow sh-diamond sh-framed absolute left-[-10px] top-[42%] z-10 hidden h-[4.5rem] w-[4.5rem] -translate-y-1/2 items-center justify-center sm:flex lg:left-[-16px] min-[1400px]:left-[-40px]">
                 <Chevron className="h-7 w-7 rotate-180" />
               </button>
-              <button onClick={() => scroll(1)} aria-label="次のガチャ" className="carousel-arrow absolute right-[-6px] top-[42%] z-10 hidden h-16 w-16 -translate-y-1/2 items-center justify-center rounded-full sm:flex lg:right-[-12px] min-[1400px]:right-[-35px]">
+              <button onClick={() => scroll(1)} aria-label="次のガチャ" className="carousel-arrow sh-diamond sh-framed absolute right-[-10px] top-[42%] z-10 hidden h-[4.5rem] w-[4.5rem] -translate-y-1/2 items-center justify-center sm:flex lg:right-[-16px] min-[1400px]:right-[-40px]">
                 <Chevron className="h-7 w-7" />
               </button>
             </>
@@ -347,7 +347,7 @@ export function PopularExchange() {
             人気のポイント交換先
           </h2>
           <p className="font-round text-sm font-bold text-[#2a2f5c] lg:text-[1.05rem]">いろいろなデジタルギフトと交換できます！</p>
-          <Link href="/shop" className="cta-pink ml-auto flex h-11 items-center gap-1 rounded-full px-6 font-round text-sm font-bold text-white transition hover:brightness-110 lg:h-[48px] lg:w-[260px] lg:justify-center lg:text-[1.2rem]">
+          <Link href="/shop" className="sh-flag btn-gem ml-auto flex h-11 items-center gap-1 px-6 font-round text-sm font-bold text-white transition hover:brightness-110 lg:h-[48px] lg:w-[260px] lg:justify-center lg:text-[1.2rem]">
             ポイント交換を見る
             <Chevron className="h-5 w-5" />
           </Link>

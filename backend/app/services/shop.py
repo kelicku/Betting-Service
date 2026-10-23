@@ -15,7 +15,7 @@ import json
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import and_, func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -45,11 +45,16 @@ def code_hash(code: str) -> str:
     return hmac.new(settings.secret_key.encode(), f"gift:{code.strip()}".encode(), hashlib.sha256).hexdigest()
 
 
+def code_is_available():
+    """まだ誰にも渡していないコード。申請が削除されて order_id が空になっても、一度渡したコード（assigned_at あり）は二度と渡さない。"""
+    return and_(GiftCode.order_id.is_(None), GiftCode.assigned_at.is_(None))
+
+
 async def available_codes(db: AsyncSession, item_ids: list[int]) -> dict[int, int]:
     if not item_ids:
         return {}
     rows = await db.execute(
-        select(GiftCode.item_id, func.count()).where(GiftCode.item_id.in_(item_ids), GiftCode.order_id.is_(None)).group_by(GiftCode.item_id)
+        select(GiftCode.item_id, func.count()).where(GiftCode.item_id.in_(item_ids), code_is_available()).group_by(GiftCode.item_id)
     )
     return {i: n for i, n in rows.all()}
 
@@ -83,7 +88,7 @@ async def list_items(db: AsyncSession, user: User | None) -> list[dict]:
 
 async def _assign_code(db: AsyncSession, item: ShopItem, order: ShopOrder) -> GiftCode | None:
     code = (await db.execute(
-        select(GiftCode).where(GiftCode.item_id == item.id, GiftCode.order_id.is_(None))
+        select(GiftCode).where(GiftCode.item_id == item.id, code_is_available())
         .order_by(GiftCode.id).limit(1).with_for_update(skip_locked=True)
     )).scalar_one_or_none()
     if code is None:

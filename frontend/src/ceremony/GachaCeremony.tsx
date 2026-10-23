@@ -176,7 +176,7 @@ export default function GachaCeremony({
       {showSkip && (
         <button
           onClick={skip}
-          className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-20 rounded-full border border-white/15 bg-night/60 px-4 py-2 text-sm text-moon/80 backdrop-blur transition hover:border-gold/50 hover:text-gold-light"
+          className="sh-arrow absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-20 bg-white/15 py-2 pl-4 text-sm font-bold text-moon/90 backdrop-blur transition hover:bg-white/25 hover:text-gold-light"
         >
           スキップ ≫
         </button>
@@ -263,7 +263,7 @@ function SoundToggle() {
       onClick={() => setOn(!on)}
       aria-pressed={on}
       aria-label={on ? "効果音をオフにする" : "効果音をオンにする"}
-      className="absolute left-4 top-[max(1rem,env(safe-area-inset-top))] z-20 flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-night/60 text-moon/80 backdrop-blur transition hover:border-gold/50 hover:text-gold-light"
+      className="sh-diamond absolute left-3 top-[max(0.75rem,env(safe-area-inset-top))] z-20 flex h-12 w-12 items-center justify-center bg-white/15 text-moon/90 backdrop-blur transition hover:bg-white/25 hover:text-gold-light"
     >
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
         <path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor" stroke="none" />

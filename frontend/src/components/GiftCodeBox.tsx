@@ -13,7 +13,7 @@ export function GiftCodeBox({ code, expires }: { code: string; expires?: string 
       <button
         type="button"
         onClick={() => navigator.clipboard?.writeText(code).then(() => toast("ギフトコードをコピーしました"), () => toast("コピーできませんでした", "error"))}
-        className="mt-3 rounded-full bg-white px-4 py-1.5 text-sm font-bold text-gold-light shadow-[0_2px_8px_-4px_rgba(232,30,100,0.5)] hover:bg-gold/10"
+        className="sh-stamp mt-3 border-2 border-[#1d2350]/25 bg-white px-4 py-1.5 text-sm font-bold text-gold-light hover:bg-gold/10"
       >
         コピーする
       </button>

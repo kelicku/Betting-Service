@@ -76,7 +76,7 @@ test("ポイント交換：デジタルギフトと交換すると、ポイン�
   const done = page.getByRole("dialog", { name: /交換が完了しました|交換を受け付けました/ });
   await expect(done).toBeVisible();
   if (await page.getByRole("dialog", { name: "交換が完了しました" }).count()) {
-    await expect(page.getByText(/^TEST-DGC-\d{4}-NOTREAL$/)).toBeVisible();
+    await expect(page.getByText(/^TEST-DGC-[\d-]+-NOTREAL$/)).toBeVisible();
   }
   await expect.poll(() => balanceOf(page, /所持ポイント/)).toBe(before - 5000);
 });

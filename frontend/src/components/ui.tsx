@@ -15,20 +15,19 @@ export { cx };
 type Variant = "gold" | "ghost" | "purple" | "danger" | "subtle";
 type Size = "sm" | "md" | "lg" | "xl";
 
+// 種類ごとに形を変える（角丸は使わない）：主要＝宝石カット、青＝矢羽根、枠＝金の額縁、控えめ＝はんこ、危険＝六角形
 const VARIANT: Record<Variant, string> = {
-  gold:
-    "text-white font-round font-extrabold bg-[linear-gradient(180deg,#ff86bb_0%,#ff4a8d_50%,#ee1f68_100%)] shadow-[0_1px_0_rgba(255,255,255,0.55)_inset,0_-3px_0_rgba(170,0,70,0.22)_inset,0_8px_22px_-8px_rgba(238,31,104,0.8)] hover:brightness-105 hover:shadow-[0_1px_0_rgba(255,255,255,0.55)_inset,0_-3px_0_rgba(170,0,70,0.22)_inset,0_12px_28px_-8px_rgba(238,31,104,0.9)] [text-shadow:0_1px_0_rgba(170,0,70,0.3)]",
-  purple:
-    "text-white font-round font-bold bg-[linear-gradient(180deg,#5aa8ff_0%,#2f7bff_55%,#1d5be0_100%)] shadow-[0_1px_0_rgba(255,255,255,0.5)_inset,0_8px_22px_-8px_rgba(29,91,224,0.75)] hover:brightness-105",
-  ghost: "text-gold-light font-round font-bold border-2 border-gold/40 bg-white/80 hover:bg-gold/10 hover:border-gold/70 hover:shadow-glow",
-  subtle: "text-moon/80 bg-veil/5 hover:bg-veil/10 border border-veil/10",
-  danger: "text-white font-semibold bg-gradient-to-b from-rose-500 to-rose-700 hover:shadow-[0_0_24px_rgba(244,63,94,0.5)]",
+  gold: "sh-gem btn-gem text-white font-round font-extrabold [text-shadow:0_1px_0_rgba(170,0,70,0.3)]",
+  purple: "sh-chevron btn-chevron text-white font-round font-bold",
+  ghost: "sh-bracket text-gold-light font-round font-bold bg-white/85 shadow-[inset_0_0_0_1.5px_rgba(231,181,74,0.45)] hover:bg-gold/10 hover:shadow-[inset_0_0_0_1.5px_rgba(231,181,74,0.8)]",
+  subtle: "sh-stamp text-moon/80 font-round font-bold bg-white border-2 border-[#1d2350]/25 hover:border-[#1d2350]/40",
+  danger: "sh-hex btn-hex text-white font-semibold",
 };
 const SIZE: Record<Size, string> = {
-  sm: "h-9 px-3.5 text-sm rounded-lg",
-  md: "h-11 px-5 text-[15px] rounded-xl",
-  lg: "h-13 min-h-[3.25rem] px-7 text-base rounded-xl",
-  xl: "min-h-[3.75rem] px-8 text-lg rounded-2xl",
+  sm: "h-9 px-3.5 text-sm [--c:7px]",
+  md: "h-11 px-5 text-[15px]",
+  lg: "h-13 min-h-[3.25rem] px-7 text-base [--c:12px]",
+  xl: "min-h-[3.75rem] px-8 text-lg [--c:14px]",
 };
 
 type BtnProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
@@ -291,7 +290,7 @@ export function Pagination({ page, total, perPage, onChange }: { page: number; t
   const nums = Array.from(new Set([1, page - 1, page, page + 1, pages].filter((n) => n >= 1 && n <= pages))).sort((a, b) => a - b);
   return (
     <nav className="mt-6 flex items-center justify-center gap-1.5" aria-label="ページ切り替え">
-      <button className="h-9 rounded-lg px-3 text-sm text-moon/70 hover:bg-veil/5 disabled:opacity-30" disabled={page <= 1} onClick={() => onChange(page - 1)}>
+      <button className="sh-tag h-9 bg-veil/5 px-3 text-sm text-moon/70 [--c:10px] hover:bg-veil/10 disabled:opacity-30" disabled={page <= 1} onClick={() => onChange(page - 1)}>
         前へ
       </button>
       {nums.map((n, i) => (
@@ -301,15 +300,15 @@ export function Pagination({ page, total, perPage, onChange }: { page: number; t
             onClick={() => onChange(n)}
             aria-current={n === page ? "page" : undefined}
             className={cx(
-              "h-9 min-w-9 rounded-lg px-2 text-sm tabular-nums transition",
-              n === page ? "bg-gold/20 text-gold-light shadow-glow" : "text-moon/70 hover:bg-veil/5",
+              "sh-diamond h-10 w-10 text-sm font-bold tabular-nums transition",
+              n === page ? "bg-[linear-gradient(180deg,#ff86bb,#ee1f68)] text-white" : "bg-veil/5 text-moon/70 hover:bg-veil/10",
             )}
           >
             {n}
           </button>
         </span>
       ))}
-      <button className="h-9 rounded-lg px-3 text-sm text-moon/70 hover:bg-veil/5 disabled:opacity-30" disabled={page >= pages} onClick={() => onChange(page + 1)}>
+      <button className="sh-arrow h-9 bg-veil/5 px-3 text-sm text-moon/70 [--c:10px] hover:bg-veil/10 disabled:opacity-30" disabled={page >= pages} onClick={() => onChange(page + 1)}>
         次へ
       </button>
     </nav>
@@ -391,8 +390,8 @@ export function Tabs<T extends string>({
           aria-selected={value === it.value}
           onClick={() => onChange(it.value)}
           className={cx(
-            "relative shrink-0 rounded-full px-4 py-2 text-sm transition",
-            value === it.value ? "bg-gold/15 text-gold-light shadow-[inset_0_0_0_1px_rgba(216,185,118,0.45)]" : "text-moon/60 hover:bg-veil/5 hover:text-moon",
+            "sh-folder relative shrink-0 px-5 py-2 text-sm font-bold transition",
+            value === it.value ? "bg-[linear-gradient(180deg,#ffe3ee,#ffd0e2)] text-gold-light shadow-[inset_0_-3px_0_#ff5f9a]" : "bg-veil/[0.04] text-moon/60 hover:bg-veil/10 hover:text-moon",
           )}
         >
           {it.label}

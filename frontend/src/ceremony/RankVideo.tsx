@@ -65,7 +65,7 @@ export default function RankVideo({ url, logo, label, onDone }: { url: string; l
           {/* eslint-disable-next-line @next/next/no-img-element */}
           {logo ? <img src={logo} alt={label} className="max-h-40 max-w-[80%] object-contain drop-shadow-[0_0_24px_rgba(255,255,255,0.6)]" /> : <span className="font-round text-5xl font-black drop-shadow-[0_0_20px_rgba(255,92,147,0.9)]">{label}</span>}
           <motion.span
-            className="rounded-full bg-white/95 px-8 py-3 font-round text-lg font-bold text-[#e81e64] shadow-[0_0_30px_rgba(255,255,255,0.5)]"
+            className="sh-ribbon bg-white/95 px-12 py-3.5 font-round text-lg font-bold text-[#e81e64]"
             animate={{ scale: [1, 1.06, 1] }}
             transition={{ repeat: Infinity, duration: 1.4 }}
           >
@@ -76,7 +76,7 @@ export default function RankVideo({ url, logo, label, onDone }: { url: string; l
       <button
         type="button"
         onClick={finish}
-        className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-10 rounded-full border border-white/30 bg-black/50 px-4 py-2 text-sm text-white/90 backdrop-blur"
+        className="sh-arrow absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-10 bg-white/20 py-2 pl-4 text-sm font-bold text-white backdrop-blur hover:bg-white/30"
       >
         スキップ ≫
       </button>

@@ -99,15 +99,15 @@ export default function HomeHero() {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 1.1, ease: [0.22, 1, 0.36, 1] }}
       >
-        {/* キャラクターの吹き出し（サイトの顔として目に入るように） */}
-        <motion.p
-          className="hero-bubble absolute left-[16%] top-[-4%] z-10 whitespace-nowrap rounded-full px-4 py-1.5 font-round text-[0.95rem] font-black text-[#ff2f6e] sm:left-[10%] sm:text-[1.05rem] lg:left-[14%] lg:top-[-2%] lg:px-6 lg:py-2.5 lg:text-[1.4rem]"
-          initial={{ opacity: 0, scale: 0.6, y: 10 }}
+        {/* キャラクターの吹き出し：きらめく雲（文字がひとつずつ弾む） */}
+        <motion.div
+          className="absolute left-[12%] top-[-7%] z-10 sm:left-[8%] lg:left-[12%] lg:top-[-5%]"
+          initial={{ opacity: 0, scale: 0.4, y: 16 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ delay: 1.1, type: "spring", stiffness: 260, damping: 14 }}
+          transition={{ delay: 1.1, type: "spring", stiffness: 220, damping: 13 }}
         >
-          {SITE.mascot.name ? `${SITE.mascot.name}「${SITE.mascot.greeting}」` : SITE.mascot.greeting}
-        </motion.p>
+          <DreamBubble text={SITE.mascot.name ? `${SITE.mascot.name}「${SITE.mascot.greeting}」` : SITE.mascot.greeting} />
+        </motion.div>
         <div className="waku-float">
           <Image
             src={SITE.mascot.full}
@@ -180,20 +180,12 @@ export default function HomeHero() {
               <path d="M30 1l4 6-4 6-4-6z" />
               <path d="M24 9c-6 0-9-5-15-5S2 7 1 9M36 9c6 0 9-5 15-5s7 3 8 5" fill="none" strokeWidth="2.2" />
             </svg>
-            <svg viewBox="0 0 16 40" className="cta-orn absolute left-[-10px] top-1/2 h-[38px] -translate-y-1/2 lg:left-[-15px] lg:h-[54px]" aria-hidden>
-              <path d="M12 20c-6 0-9-4-9-8s3-7 7-7M12 20c-6 0-9 4-9 8s3 7 7 7" fill="none" strokeWidth="2.4" />
-              <circle cx="10" cy="20" r="3" />
-            </svg>
-            <svg viewBox="0 0 16 40" className="cta-orn absolute right-[-10px] top-1/2 h-[38px] -translate-y-1/2 scale-x-[-1] lg:right-[-15px] lg:h-[54px]" aria-hidden>
-              <path d="M12 20c-6 0-9-4-9-8s3-7 7-7M12 20c-6 0-9 4-9 8s3 7 7 7" fill="none" strokeWidth="2.4" />
-              <circle cx="10" cy="20" r="3" />
-            </svg>
-            <span className="waku-cta flex h-[4.4rem] w-[20rem] items-center rounded-full pl-3 pr-6 font-round text-[1.3rem] font-bold tracking-[0.06em] text-white sm:w-[24rem] lg:h-[100px] lg:w-[478px] lg:pl-[18px] lg:pr-10 lg:text-[1.85rem]">
+            <span className="waku-cta sh-ribbon flex h-[4.4rem] w-[21.5rem] items-center pl-[32px] pr-[34px] font-round text-[1.3rem] font-bold tracking-[0.06em] text-white sm:w-[26rem] lg:h-[100px] lg:w-[540px] lg:pl-[46px] lg:pr-[50px] lg:text-[1.85rem] lg:[--c:30px]">
               <span className="cta-sheen-clip" aria-hidden />
-              <span className="paw-badge flex h-12 w-12 shrink-0 items-center justify-center rounded-full lg:h-[4.1rem] lg:w-[4.1rem]">
+              <span className="paw-badge sh-diamond flex h-12 w-12 shrink-0 items-center justify-center lg:h-[4.4rem] lg:w-[4.4rem]">
                 <Paw />
               </span>
-              <span className="flex-1 text-center [text-shadow:0_2px_3px_rgba(170,0,70,0.35)]">今すぐガチャを引く</span>
+              <span className="flex-1 whitespace-nowrap text-center [text-shadow:0_2px_3px_rgba(170,0,70,0.35)]">今すぐガチャを引く</span>
               <svg viewBox="0 0 24 24" className="h-6 w-6 transition-transform group-hover:translate-x-1 lg:h-8 lg:w-8" fill="none" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                 <path d="M9 5l7 7-7 7" />
               </svg>
@@ -202,5 +194,38 @@ export default function HomeHero() {
         </motion.div>
       </div>
     </section>
+  );
+}
+
+/** きらめく雲の吹き出し：虹色の光の輪、まわりで瞬く星、ひとつずつ弾む文字、猫へ続く小さな雲 */
+function DreamBubble({ text }: { text: string }) {
+  const chars = Array.from(text);
+  const n = Math.max(chars.length - 1, 1);
+  return (
+    <div className="dream-bubble relative">
+      <span className="dream-halo" aria-hidden />
+      <div className="dream-cloud relative whitespace-nowrap px-5 py-2.5 lg:px-8 lg:py-3.5">
+        <span className="dream-star -left-5 -top-4 h-6 w-6 bg-[linear-gradient(135deg,#ffe27a,#ff9ed2)] lg:h-8 lg:w-8" aria-hidden />
+        <span className="dream-star -right-3 -top-6 h-4 w-4 bg-[linear-gradient(135deg,#c9a2ff,#8fd3ff)] [animation-delay:0.7s] lg:h-5 lg:w-5" aria-hidden />
+        <span className="dream-star -bottom-4 left-[30%] h-3.5 w-3.5 bg-[linear-gradient(135deg,#ff9ed2,#ffb36b)] [animation-delay:1.4s]" aria-hidden />
+        <span className="dream-star -right-6 bottom-0 h-5 w-5 bg-[linear-gradient(135deg,#ffe27a,#a8f0d4)] [animation-delay:2s] lg:h-7 lg:w-7" aria-hidden />
+        <span className="dream-star left-[62%] -top-7 h-3 w-3 bg-[linear-gradient(135deg,#ff9ed2,#c9a2ff)] [animation-delay:1s]" aria-hidden />
+        <p className="dream-text relative font-round text-[1rem] font-black tracking-[0.04em] sm:text-[1.1rem] lg:text-[1.5rem]" aria-label={text}>
+          {chars.map((ch, i) => (
+            <span
+              key={i}
+              aria-hidden
+              className="dream-char"
+              style={{ animationDelay: `${i * 0.09}s`, backgroundSize: `${chars.length * 100}% 100%`, backgroundPosition: `${(i / n) * 100}% 0` }}
+            >
+              {ch}
+            </span>
+          ))}
+        </p>
+      </div>
+      {/* 猫へ続く、ふわふわの小さな雲 */}
+      <span className="dream-puff absolute right-[30%] top-[calc(100%+4px)] h-3.5 w-5 lg:h-4 lg:w-6" aria-hidden />
+      <span className="dream-puff absolute right-[25%] top-[calc(100%+20px)] h-2 w-3 [animation-delay:0.4s] lg:top-[calc(100%+24px)]" aria-hidden />
+    </div>
   );
 }

@@ -5,6 +5,7 @@
   python -m app.cli create-admin EMAIL   管理者アカウントを作成（パスワードは対話入力または ADMIN_PASSWORD）
   python -m app.cli purge-pii            保持期間を過ぎた配送先情報・IP アドレスを消去（毎日実行。本番の構成では自動）
   python -m app.cli cleanup-test-data    動作確認スクリプトが作ったテスト用のアカウント・ガチャ・クーポンを削除（開発環境のみ）
+  python -m app.cli restock-demo [N]     デモ用ガチャ（showcase）の残り口数が N 口（既定 100）未満なら満タンに戻し、ラストワン賞も再び出るようにする（開発環境のみ）
   python -m app.cli verify-draws         抽選結果の改ざん検知（HMAC 照合）
   python -m app.cli check-mail TO        メール送信の設定を確認（テストメールを送り、失敗したら原因を表示）
 """
@@ -424,6 +425,41 @@ async def check_mail(to: str) -> None:
     print(f"送信しました: {to}（迷惑メールフォルダも確認してください）")
 
 
+async def restock_demo(min_remaining: int = 100) -> None:
+    """デモ用ガチャの在庫を満タンに戻す（動作確認・お客さまの試用で口数が減っていくため）。開発・デモ環境専用。"""
+    from sqlalchemy import delete, update
+
+    from app.core import cache
+    from app.core.config import settings
+    from app.models import LastOneAward, ShopItem
+    from app.services import shop as shop_svc
+
+    if settings.is_production:
+        sys.exit("restock-demo: 本番環境では実行できません")
+    async with SessionLocal() as db:
+        done = []
+        for slug, *_ in SHOWCASE_GACHAS:
+            g = await db.scalar(select(Gacha).where(Gacha.slug == slug))
+            if g is None:
+                continue
+            items = (await db.execute(select(GachaItem).where(GachaItem.gacha_id == g.id, GachaItem.is_active.is_(True)))).scalars().all()
+            if sum(i.stock_remaining or 0 for i in items) >= min_remaining:
+                continue
+            await db.execute(update(GachaItem).where(GachaItem.gacha_id == g.id, GachaItem.is_active.is_(True)).values(stock_remaining=GachaItem.stock_total))
+            await db.execute(delete(LastOneAward).where(LastOneAward.gacha_id == g.id))
+            done.append(slug)
+        # デモ用のテストコード（本物ではない）も、少なくなっていたら足す
+        digico = await db.scalar(select(ShopItem).where(ShopItem.name == SHOP_ITEMS[0][0]))
+        admin = await db.scalar(select(User).where(User.role == Role.admin).order_by(User.id))
+        if digico and admin and (await shop_svc.available_codes(db, [digico.id])).get(digico.id, 0) < 5:
+            stamp = datetime.now(UTC).strftime("%m%d%H%M")
+            await shop_svc.add_codes(db, digico.id, [f"TEST-DGC-{stamp}-{n:02d}-NOTREAL" for n in range(1, 21)], None, admin)
+            done.append("テスト用ギフトコード")
+        await db.commit()
+    cache.invalidate("gachas:list")
+    print(f"restock-demo: {', '.join(done) if done else '補充の必要なし'}")
+
+
 def main() -> None:
     cmd = sys.argv[1] if len(sys.argv) > 1 else ""
     if cmd == "seed":
@@ -440,6 +476,8 @@ def main() -> None:
         asyncio.run(verify_draws())
     elif cmd == "cleanup-test-data":
         asyncio.run(cleanup_test_data())
+    elif cmd == "restock-demo":
+        asyncio.run(restock_demo(int(sys.argv[2]) if len(sys.argv) > 2 else 100))
     else:
         print(__doc__)
         sys.exit(2)

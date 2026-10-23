@@ -69,7 +69,7 @@ function PointPill({ balance }: { balance: number }) {
   return (
     <Link
       href="/points"
-      className="group flex h-12 items-center gap-2 rounded-full border-2 border-[#f6c445] bg-white pl-1.5 pr-4 shadow-[0_4px_14px_-4px_rgba(240,170,30,0.6)] transition hover:shadow-[0_6px_20px_-4px_rgba(240,170,30,0.8)] min-[1400px]:h-14 min-[1400px]:min-w-[12rem] min-[1400px]:gap-3 min-[1400px]:pl-2.5 min-[1400px]:pr-6"
+      className="sh-hex sh-framed relative [--c:16px] group flex h-12 items-center gap-2 bg-[#f6c445] transition hover:bg-[#f0a91e] min-[1400px]:h-14 min-[1400px]:min-w-[12rem] min-[1400px]:gap-3 min-[1400px]:pl-2.5 min-[1400px]:pr-6"
       aria-label={`所持ポイント ${balance.toLocaleString("ja-JP")}pt`}
     >
       <CoinIcon className="h-9 w-9 shrink-0 min-[1400px]:h-[2.6rem] min-[1400px]:w-[2.6rem]" />
@@ -86,7 +86,7 @@ function TicketPill({ balance }: { balance: number }) {
   return (
     <Link
       href="/tickets"
-      className="flex h-11 items-center gap-1.5 rounded-full border-2 border-[#ffc2d6] bg-white pl-2 pr-3 shadow-[0_4px_12px_-6px_rgba(255,80,140,0.6)] transition hover:border-[#ff8fb5] min-[1400px]:h-12 min-[1400px]:pr-4"
+      className="sh-ticket flex h-11 items-center gap-1.5 border-y-2 border-[#ffc2d6] bg-[linear-gradient(180deg,#fff,#fff3f8)] pl-3.5 pr-4 transition hover:border-[#ff8fb5] min-[1400px]:h-12 min-[1400px]:pr-5"
       aria-label={`所持チケット ${balance.toLocaleString("ja-JP")}枚`}
     >
       <TicketIcon className="h-7 w-7 shrink-0" />
@@ -108,7 +108,7 @@ function shortJa(n: number): string {
 /** スマートフォン用：チケットとポイントを 1 つの小さな枠にまとめて表示する。 */
 function BalancePillCompact({ tickets, points }: { tickets: number; points: number }) {
   return (
-    <span className="flex h-10 items-center overflow-hidden rounded-full border-2 border-[#f6c445] bg-white text-[#1e1f3a] shadow-[0_4px_14px_-6px_rgba(240,170,30,0.6)] sm:h-11 lg:hidden">
+    <span className="sh-ticket [--c:6px] flex h-10 items-center overflow-hidden border-y-2 border-[#f6c445] bg-white px-1 text-[#1e1f3a] sm:h-11 lg:hidden">
       <Link href="/tickets" className="flex items-center gap-0.5 pl-1 pr-1.5 min-[380px]:pl-1.5 min-[380px]:pr-2" aria-label={`所持チケット ${tickets.toLocaleString("ja-JP")}枚`}>
         <TicketIcon className="h-5 w-5" />
         <span className="font-round text-sm font-extrabold tabular-nums">{shortJa(tickets)}</span>
@@ -189,7 +189,7 @@ export function Header() {
         <div className="ml-auto flex shrink-0 items-center gap-1 sm:gap-2 xl:ml-6 min-[1400px]:ml-10">
           {me ? (
             <>
-              <Link href="/notifications" className="relative hidden h-11 w-11 items-center sm:flex justify-center rounded-full text-[#1c2560] transition hover:bg-[#1c2560]/5" aria-label={me.unread_notifications > 0 ? `お知らせ（未読${me.unread_notifications}件）` : "お知らせ"}>
+              <Link href="/notifications" className="sh-diamond relative hidden h-12 w-12 items-center sm:flex justify-center text-[#1c2560] transition hover:bg-[#1c2560]/5" aria-label={me.unread_notifications > 0 ? `お知らせ（未読${me.unread_notifications}件）` : "お知らせ"}>
                 <svg viewBox="0 0 24 24" className="h-7 w-7" fill="none" stroke="currentColor" strokeWidth="1.9">
                   <path d="M6 16V11a6 6 0 1112 0v5l1.5 2h-15L6 16zM10 20a2 2 0 004 0" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
@@ -207,10 +207,10 @@ export function Header() {
             </>
           ) : (
             <>
-              <Link href="/login" className="flex h-10 items-center whitespace-nowrap rounded-full border-2 border-[#f6c445] bg-white px-3 font-round text-sm font-bold text-[#1c2560] transition hover:bg-[#fff8e1] sm:h-12 sm:px-6 sm:text-base">
+              <Link href="/login" className="sh-ticket flex h-10 items-center whitespace-nowrap bg-[linear-gradient(180deg,#ffe58a,#f6c445)] px-4 font-round text-sm font-bold text-[#1c2560] shadow-[inset_0_2px_0_rgba(255,255,255,0.7),inset_0_-3px_0_rgba(180,120,0,0.25)] transition hover:bg-[#fff8e1] sm:h-12 sm:px-6 sm:text-base">
                 ログイン
               </Link>
-              <Link href="/register" className="cta-pink hidden h-12 items-center whitespace-nowrap rounded-full px-6 font-round text-base font-bold text-white sm:flex">
+              <Link href="/register" className="sh-para btn-gem hidden h-12 items-center whitespace-nowrap px-6 font-round text-base font-bold text-white sm:flex">
                 新規登録
               </Link>
             </>
@@ -218,7 +218,7 @@ export function Header() {
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenu((v) => !v)}
-              className="flex h-10 w-10 items-center sm:h-11 sm:w-11 justify-center rounded-full text-[#1c2560] transition hover:bg-[#1c2560]/5"
+              className="sh-gem [--c:8px] flex h-10 w-10 items-center sm:h-11 sm:w-11 justify-center text-[#1c2560] transition hover:bg-[#1c2560]/8"
               aria-expanded={menu}
               aria-haspopup="menu"
               aria-label="メニュー"
@@ -239,26 +239,26 @@ export function Header() {
                   {me && <p className="truncate px-3 pb-1 pt-2 text-xs text-[#6a6f99]">{me.display_name} さん</p>}
                   <div className="xl:hidden">
                     {NAV.map((n) => (
-                      <Link key={n.href} href={n.href} role="menuitem" className="block rounded-lg px-3 py-2 text-sm font-bold hover:bg-[#f1f3ff]">
+                      <Link key={n.href} href={n.href} role="menuitem" className="block border-l-[3px] border-transparent px-3 py-2 text-sm font-bold hover:border-[#ff5f9a] hover:bg-[#fff1f6]">
                         {n.label}
                       </Link>
                     ))}
                     <div className="my-1 h-px bg-[#eceef8]" />
                   </div>
                   {account.map(([href, label]) => (
-                    <Link key={href} href={href} role="menuitem" className="block rounded-lg px-3 py-2 text-sm hover:bg-[#f1f3ff]">
+                    <Link key={href} href={href} role="menuitem" className="block border-l-[3px] border-transparent px-3 py-2 text-sm hover:border-[#ff5f9a] hover:bg-[#fff1f6]">
                       {label}
                     </Link>
                   ))}
                   {me && (me.role === "admin" || me.role === "staff") && (
-                    <Link href="/admin" role="menuitem" className="block rounded-lg px-3 py-2 text-sm text-[#5b3cc4] hover:bg-[#f1f3ff]">
+                    <Link href="/admin" role="menuitem" className="block border-l-[3px] border-transparent px-3 py-2 text-sm text-[#5b3cc4] hover:border-[#7a4ff0] hover:bg-[#f4f0ff]">
                       管理画面
                     </Link>
                   )}
                   {me && (
                     <>
                       <div className="my-1 h-px bg-[#eceef8]" />
-                      <button onClick={logout} role="menuitem" className="block w-full rounded-lg px-3 py-2 text-left text-sm text-[#6a6f99] hover:bg-[#f1f3ff]">
+                      <button onClick={logout} role="menuitem" className="block w-full border-l-[3px] border-transparent px-3 py-2 text-left text-sm text-[#6a6f99] hover:border-[#6a6f99] hover:bg-[#f4f5fb]">
                         ログアウト
                       </button>
                     </>
@@ -293,7 +293,7 @@ export function MobileNav() {
           if (it.center)
             return (
               <Link key={it.href} href={it.href} className="relative -mt-6 flex flex-col items-center" aria-label="ガチャ一覧">
-                <span className="cta-pink flex h-16 w-16 items-center justify-center rounded-full border-4 border-white">
+                <span className="nav-gem sh-diamond sh-framed relative flex h-[4.5rem] w-[4.5rem] items-center justify-center">
                   <svg viewBox="0 0 24 24" className="h-7 w-7 text-white">
                     <path d="M12 2l2.4 7.2L22 12l-7.6 2.8L12 22l-2.4-7.2L2 12l7.6-2.8z" fill="currentColor" />
                   </svg>
@@ -350,7 +350,7 @@ function NewsletterForm() {
   return (
     <form onSubmit={submit} className="w-full max-w-xs">
       <p className="font-round text-[15px] font-bold text-[#1c2560]">最新情報を受け取る</p>
-      <div className="mt-3 flex overflow-hidden rounded-full border-2 border-[#ffc6da] bg-white focus-within:border-[#ff6fa0]">
+      <div className="mt-3 flex overflow-hidden border-2 border-[#ffc6da] bg-white focus-within:border-[#ff6fa0]">
         <input
           type="email"
           required
@@ -360,7 +360,7 @@ function NewsletterForm() {
           aria-label="メールアドレス"
           className="min-w-0 flex-1 bg-transparent px-4 py-2.5 text-sm text-[#1c2560] placeholder:text-[#9a9ec0] focus:outline-none"
         />
-        <button disabled={busy} aria-label="登録する" className="cta-pink flex w-12 items-center justify-center text-white disabled:opacity-60">
+        <button disabled={busy} aria-label="登録する" className="sh-arrow btn-gem [--c:10px] flex w-14 items-center justify-center pl-3 text-white disabled:opacity-60">
           <svg viewBox="0 0 24 24" className="h-4 w-4" fill="currentColor" aria-hidden>
             <path d="M3 11.5L21 3l-6.5 18-3-7.5z" />
           </svg>
@@ -409,7 +409,7 @@ export function Footer() {
             {(["x", "instagram", "youtube"] as const).map((k) => {
               const label = { x: "X", instagram: "Instagram", youtube: "YouTube" }[k];
               const url = links?.[k];
-              const cls = "flex h-10 w-10 items-center justify-center rounded-full border-2 border-[#ffd6e4] bg-white text-[#1c2560] transition";
+              const cls = "sh-diamond sh-framed relative flex h-11 w-11 items-center justify-center bg-[#ffc2d8] text-[#1c2560] transition";
               return url ? (
                 <a key={k} href={url} target="_blank" rel="noopener noreferrer" aria-label={`公式${label}`} className={cx(cls, "hover:border-[#ff6fa0] hover:text-[#ff3b7f]")}>
                   <SnsIcon kind={k} />

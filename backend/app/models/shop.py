@@ -52,7 +52,7 @@ class GiftCode(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     assigned_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
 
-    __table_args__ = (Index("ix_gift_codes_available", "item_id", postgresql_where="order_id is null"),)
+    __table_args__ = (Index("ix_gift_codes_available", "item_id", postgresql_where="order_id is null and assigned_at is null"),)
 
 
 class ShopOrder(Base, TimestampMixin):

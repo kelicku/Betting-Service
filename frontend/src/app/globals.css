@@ -573,9 +573,10 @@ main:has(.home-page) { background: #fff8f1; }
 }
 .brand-tile:hover { transform: translateY(-3px) scale(1.02); }
 .carousel-arrow {
-  background: #fff;
+  background: linear-gradient(180deg, #ffd56a, #f0a020);
+  --fill: #fff;
+  --bw: 3px;
   color: #f0a020;
-  box-shadow: 0 6px 16px -6px rgba(120, 70, 20, 0.5);
   transition: transform 0.2s ease;
 }
 .carousel-arrow:hover { transform: scale(1.08); }
@@ -643,4 +644,285 @@ main:has(.home-page) { background: #fff8f1; }
   border: 11px solid transparent;
   border-top-color: #fff;
   border-bottom: 0;
+}
+
+/* ===================== ボタンの形（角丸を使わず、種類ごとに違う形にする） =====================
+   clip-path で切り抜くため外側の影は付かない。立体感は内側の影で出す。
+   --c：角を切る大きさ・とがりの深さ */
+.sh-gem { --c: 10px; clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c)); }
+.sh-chevron { --c: 14px; clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% 50%, calc(100% - var(--c)) 100%, 0 100%, var(--c) 50%); padding-left: calc(var(--c) + 0.9rem) !important; padding-right: calc(var(--c) + 0.7rem) !important; }
+.sh-hex { --c: 14px; clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% 50%, calc(100% - var(--c)) 100%, var(--c) 100%, 0 50%); padding-left: calc(var(--c) + 0.6rem) !important; padding-right: calc(var(--c) + 0.6rem) !important; }
+.sh-ribbon { --c: 22px; clip-path: polygon(0 0, 100% 0, calc(100% - var(--c)) 50%, 100% 100%, 0 100%, var(--c) 50%); }
+.sh-flag { --c: 16px; clip-path: polygon(0 0, 100% 0, calc(100% - var(--c)) 50%, 100% 100%, 0 100%); padding-right: calc(var(--c) + 1rem) !important; }
+.sh-para { --c: 12px; clip-path: polygon(var(--c) 0, 100% 0, calc(100% - var(--c)) 100%, 0 100%); padding-left: calc(var(--c) + 1rem) !important; padding-right: calc(var(--c) + 1rem) !important; }
+.sh-trap { --c: 10px; clip-path: polygon(0 0, 100% 0, calc(100% - var(--c)) 100%, var(--c) 100%); }
+.sh-tag { --c: 14px; clip-path: polygon(var(--c) 0, 100% 0, 100% 100%, var(--c) 100%, 0 50%); padding-left: calc(var(--c) + 1.1rem) !important; }
+.sh-arrow { --c: 12px; clip-path: polygon(0 0, calc(100% - var(--c)) 0, 100% 50%, calc(100% - var(--c)) 100%, 0 100%); padding-right: calc(var(--c) + 0.8rem) !important; }
+.sh-diamond { clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); }
+.sh-folder { --c: 9px; clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% 100%, 0 100%); }
+/* チケット：左右に半円の切り欠き（mask） */
+.sh-ticket {
+  --c: 7px;
+  -webkit-mask: radial-gradient(circle var(--c) at 0 50%, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle var(--c) at 100% 50%, #0000 97%, #000) right / 51% 100% no-repeat;
+  mask: radial-gradient(circle var(--c) at 0 50%, #0000 97%, #000) left / 51% 100% no-repeat, radial-gradient(circle var(--c) at 100% 50%, #0000 97%, #000) right / 51% 100% no-repeat;
+}
+/* はんこ：四角＋ずらした影 */
+.sh-stamp { border-radius: 0 !important; box-shadow: 3px 3px 0 rgba(29, 35, 80, 0.28); }
+.sh-stamp:hover { box-shadow: 4px 4px 0 rgba(29, 35, 80, 0.32); translate: -1px -1px; }
+.sh-stamp:active { box-shadow: 1px 1px 0 rgba(29, 35, 80, 0.28); translate: 2px 2px; }
+/* 額縁：四角の 4 隅に金の L 字 */
+.sh-bracket {
+  --k: #e7b54a;
+  border-radius: 0 !important;
+  background-image:
+    linear-gradient(var(--k), var(--k)), linear-gradient(var(--k), var(--k)), linear-gradient(var(--k), var(--k)), linear-gradient(var(--k), var(--k)),
+    linear-gradient(var(--k), var(--k)), linear-gradient(var(--k), var(--k)), linear-gradient(var(--k), var(--k)), linear-gradient(var(--k), var(--k));
+  background-size: 12px 3px, 3px 12px, 12px 3px, 3px 12px, 12px 3px, 3px 12px, 12px 3px, 3px 12px;
+  background-position: 0 0, 0 0, 100% 0, 100% 0, 0 100%, 0 100%, 100% 100%, 100% 100%;
+  background-repeat: no-repeat;
+}
+/* 縁取り付き：要素の背景が縁、::before が中身（斜めの辺にも縁が付く） */
+.sh-framed { isolation: isolate; } /* 位置（relative / absolute / fixed）は要素側のクラスで指定する */
+.sh-framed::before { content: ""; position: absolute; inset: var(--bw, 2px); background: var(--fill, #fff); clip-path: inherit; z-index: -1; }
+
+/* キーボード操作の目印（外側の線は切り抜かれるため、内側に二重の線を出す） */
+:is(.sh-gem, .sh-chevron, .sh-hex, .sh-ribbon, .sh-flag, .sh-para, .sh-trap, .sh-tag, .sh-arrow, .sh-diamond, .sh-folder, .sh-ticket, .sh-bracket, .sh-stamp):focus-visible {
+  outline: 3px solid #1d2350;
+  outline-offset: -5px;
+}
+
+/* ボタンの種類ごとの見た目 */
+.btn-gem {
+  background: linear-gradient(180deg, #ff86bb 0%, #ff4a8d 50%, #ee1f68 100%);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.55), inset 0 -4px 0 rgba(170, 0, 70, 0.28), inset 0 0 0 2px rgba(255, 255, 255, 0.22);
+}
+.btn-gem:hover { filter: brightness(1.06) saturate(1.05); }
+.btn-chevron {
+  background: linear-gradient(180deg, #5aa8ff 0%, #2f7bff 55%, #1d5be0 100%);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.5), inset 0 -3px 0 rgba(10, 40, 140, 0.3);
+}
+.btn-chevron:hover { filter: brightness(1.07); }
+.btn-hex {
+  background: linear-gradient(180deg, #fb7185, #be123c);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.4), inset 0 -3px 0 rgba(80, 0, 20, 0.3);
+}
+.btn-hex:hover { filter: brightness(1.08); }
+
+/* ===================== キャラクターの吹き出し：きらめく雲 ===================== */
+.dream-bubble { animation: dream-float 3.6s ease-in-out infinite; }
+@keyframes dream-float {
+  0%, 100% { transform: translateY(0) rotate(-1.5deg); }
+  50% { transform: translateY(-7px) rotate(1deg); }
+}
+/* 雲の本体：虹色にゆっくり流れる縁、上に 2 つのふくらみ */
+.dream-cloud {
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background:
+    radial-gradient(120% 140% at 30% 15%, #ffffff 0%, #fff6fc 45%, #f3ebff 100%) padding-box,
+    linear-gradient(90deg, #ff9ed2, #c9a2ff, #8fd3ff, #a8f0d4, #ffe08a, #ff9ed2, #c9a2ff) border-box;
+  background-size: 100% 100%, 300% 100%;
+  animation: dream-ring 6s linear infinite;
+  box-shadow: 0 0 18px 4px rgba(255, 255, 255, 0.85), 0 12px 28px -8px rgba(150, 90, 220, 0.5);
+}
+@keyframes dream-ring { to { background-position: 0 0, 300% 0; } }
+.dream-cloud::before,
+.dream-cloud::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle at 40% 30%, #fff, #faf2ff);
+  box-shadow: 0 0 0 3px rgba(201, 162, 255, 0.75), 0 0 14px 2px rgba(255, 255, 255, 0.9);
+  z-index: -1;
+}
+.dream-cloud::before { width: 30%; height: 105%; left: 13%; top: -46%; }
+.dream-cloud::after { width: 22%; height: 82%; left: 44%; top: -32%; }
+/* 雲のまわりの虹色の光（ゆっくり色が回る） */
+.dream-halo {
+  position: absolute;
+  inset: -16px -20px;
+  border-radius: 999px;
+  background: conic-gradient(from 0deg, #ff9ed2, #c9a2ff, #9fd8ff, #a8f0d4, #ffe08a, #ff9ed2);
+  filter: blur(16px);
+  opacity: 0.9;
+  animation: dream-halo 6s linear infinite;
+  z-index: -2;
+}
+@keyframes dream-halo { to { filter: blur(16px) hue-rotate(360deg); } }
+/* まわりで瞬く色つきの星 */
+.dream-star {
+  position: absolute;
+  pointer-events: none;
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+  animation: dream-twinkle 2.4s ease-in-out infinite;
+}
+@keyframes dream-twinkle {
+  0%, 100% { opacity: 0.25; transform: scale(0.55) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.1) rotate(25deg); }
+}
+/* 文字：虹色のグラデーション、ひとつずつ弾む */
+.dream-text { filter: drop-shadow(0 1px 0 #fff) drop-shadow(0 2px 3px rgba(150, 60, 200, 0.25)); }
+.dream-char {
+  display: inline-block;
+  background-image: linear-gradient(90deg, #ff3f8e, #ff7ab8, #b05cff, #5a8cff, #2fb6ff, #ff3f8e);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: dream-hop 2.4s ease-in-out infinite;
+}
+@keyframes dream-hop {
+  0%, 60%, 100% { transform: translateY(0) rotate(0deg); }
+  20% { transform: translateY(-5px) rotate(-6deg); }
+  40% { transform: translateY(1px) rotate(3deg); }
+}
+.dream-puff {
+  border-radius: 999px;
+  background: radial-gradient(circle at 35% 30%, #fff, #f3eaff);
+  box-shadow: 0 0 0 2px rgba(255, 190, 225, 0.6), 0 4px 10px -4px rgba(150, 90, 220, 0.5);
+  animation: dream-float 3s ease-in-out infinite;
+}
+
+/* メインの CTA（リボン形）：要素の背景が金の縁、::before が中のピンク */
+.waku-cta.sh-ribbon {
+  border: 0;
+  background: linear-gradient(180deg, #fff2b8 0%, #f7c645 35%, #e09a12 70%, #ffd96a 100%);
+  box-shadow: none;
+}
+.waku-cta.sh-ribbon::before {
+  inset: 5px;
+  left: 5px;
+  right: 5px;
+  top: 5px;
+  height: auto;
+  border-radius: 0;
+  clip-path: inherit;
+  background: linear-gradient(180deg, #ff7fb4 0%, #ff4d8f 48%, #f0246b 100%);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.45), inset 0 -5px 10px rgba(170, 0, 70, 0.28);
+}
+.waku-cta.sh-ribbon .cta-sheen-clip { border-radius: 0; clip-path: inherit; }
+.paw-badge.sh-diamond { box-shadow: inset 0 2px 3px rgba(255, 255, 255, 0.6); }
+
+/* 下部ナビの「ガチャ」：ひし形の宝石（白い縁） */
+.nav-gem { background: #fff; --bw: 4px; --fill: linear-gradient(180deg, #ff86bb 0%, #ff4a8d 50%, #ee1f68 100%); }
+
+/* 値札（ポイント交換へ）：左のとがりに小さな穴 */
+.price-tag { position: relative; }
+.price-tag::before {
+  content: "";
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  translate: 0 -50%;
+  rotate: 45deg;
+  background: #fff6e4;
+  box-shadow: inset 0 1px 1px rgba(150, 80, 0, 0.4);
+}
+
+/* ===================== ログインボーナスの宝箱：自然に流れる金色の光 =====================
+   周期の違う層（4.7 秒・6.3 秒・回転 28 秒・粒 4.6〜8.2 秒）を重ねて、同じ動きの繰り返しに見えないようにする */
+
+.chest-aura {
+  position: absolute;
+  left: 50%;
+  bottom: 18%;
+  border-radius: 50%;
+  pointer-events: none;
+  mix-blend-mode: screen;
+  z-index: 0;
+}
+.chest-aura-a {
+  width: 120%;
+  aspect-ratio: 1.35;
+  translate: -50% 0;
+  background: radial-gradient(closest-side, rgba(255, 236, 150, 0.95), rgba(255, 196, 60, 0.55) 45%, rgba(255, 170, 20, 0) 100%);
+  filter: blur(10px);
+  animation: chest-breathe-a 4.7s ease-in-out infinite;
+}
+.chest-aura-b {
+  width: 90%;
+  aspect-ratio: 1.8;
+  translate: -50% 10%;
+  background: radial-gradient(closest-side, rgba(255, 250, 220, 0.9), rgba(255, 210, 90, 0.4) 55%, rgba(255, 190, 40, 0) 100%);
+  filter: blur(6px);
+  animation: chest-breathe-b 6.3s ease-in-out infinite;
+}
+@keyframes chest-breathe-a {
+  0%, 100% { opacity: 0.65; transform: scale(0.94) translateX(-1.5%); }
+  38% { opacity: 1; transform: scale(1.06) translateX(1%); }
+  70% { opacity: 0.8; transform: scale(0.99) translateX(2%); }
+}
+@keyframes chest-breathe-b {
+  0%, 100% { opacity: 0.55; transform: scale(1.02, 0.96); }
+  45% { opacity: 0.95; transform: scale(0.95, 1.08); }
+  80% { opacity: 0.7; transform: scale(1.06, 1); }
+}
+/* 光の筋：ゆっくり回りながら、強さもゆらぐ */
+.chest-rays {
+  position: absolute;
+  left: 50%;
+  bottom: 30%;
+  width: 150%;
+  aspect-ratio: 1;
+  translate: -50% 50%;
+  border-radius: 50%;
+  pointer-events: none;
+  background: repeating-conic-gradient(from 0deg, rgba(255, 225, 120, 0.55) 0deg 7deg, rgba(255, 225, 120, 0) 7deg 22deg);
+  -webkit-mask: radial-gradient(closest-side, #000 10%, rgba(0, 0, 0, 0.5) 45%, transparent 75%);
+  mask: radial-gradient(closest-side, #000 10%, rgba(0, 0, 0, 0.5) 45%, transparent 75%);
+  mix-blend-mode: screen;
+  animation: chest-rays-spin 28s linear infinite, chest-rays-pulse 5.3s ease-in-out infinite;
+  z-index: 0;
+}
+@keyframes chest-rays-spin { to { rotate: 360deg; } }
+@keyframes chest-rays-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 0.75; }
+}
+/* 立ちのぼる金の粒 */
+.chest-mote {
+  position: absolute;
+  bottom: 38%;
+  border-radius: 50%;
+  background: radial-gradient(circle, #fffbe6 0%, #ffd75e 45%, rgba(255, 190, 40, 0) 75%);
+  box-shadow: 0 0 6px 2px rgba(255, 210, 90, 0.7);
+  pointer-events: none;
+  opacity: 0;
+  animation: chest-rise linear infinite;
+  z-index: 2;
+}
+@keyframes chest-rise {
+  0% { opacity: 0; transform: translate(0, 0) scale(0.6); }
+  15% { opacity: 1; }
+  50% { transform: translate(var(--dx), -55px) scale(1); }
+  85% { opacity: 0.8; }
+  100% { opacity: 0; transform: translate(calc(var(--dx) * -0.4), -115px) scale(0.4); }
+}
+/* ふた */
+.chest-lid { transform-box: fill-box; transform-origin: 0% 100%; transition: transform 0.7s cubic-bezier(0.34, 1.56, 0.64, 1); }
+.chest-seam { animation: chest-seam 3.1s ease-in-out infinite; }
+@keyframes chest-seam {
+  0%, 100% { opacity: 0.55; }
+  30% { opacity: 1; }
+  60% { opacity: 0.75; }
+}
+.chest-coin {
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #fff6c8, #f7c645 45%, #c98a10);
+  box-shadow: inset 0 0 0 2px rgba(255, 246, 200, 0.7), 0 0 8px rgba(255, 200, 60, 0.8);
+}
+/* 受け取り済み：光を控えめに */
+.chest-dim .chest-aura-a, .chest-dim .chest-aura-b { opacity: 0.35; animation-duration: 9s; }
+.chest-dim .chest-rays, .chest-dim .chest-mote { display: none; }
+
+/* ログインボーナスの舞台（夜空のグラデーションで金の光を際立たせる） */
+.bonus-stage {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 100%, rgba(255, 190, 60, 0.28), transparent 70%),
+    radial-gradient(1.5px 1.5px at 18% 22%, #fff 50%, transparent 51%),
+    radial-gradient(1px 1px at 72% 18%, #fff 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 86% 40%, #ffe9a8 50%, transparent 51%),
+    radial-gradient(1px 1px at 30% 48%, #fff 50%, transparent 51%),
+    linear-gradient(180deg, #241a5c 0%, #3b2386 55%, #5a2f8f 100%);
 }

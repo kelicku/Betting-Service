@@ -45,7 +45,7 @@ export function SearchInput({ value, onChange, placeholder }: { value: string; o
       className="flex min-w-[14rem] flex-1 gap-2 sm:max-w-sm"
     >
       <input className="field py-2 text-sm" value={v} onChange={(e) => setV(e.target.value)} placeholder={placeholder} aria-label={placeholder} />
-      <button className="rounded-lg border border-gold/40 px-3 text-sm text-gold-light hover:bg-gold/10">検索</button>
+      <button className="sh-stamp border-2 border-[#1d2350]/25 bg-white px-3 text-sm font-bold text-gold-light hover:bg-gold/10">検索</button>
     </form>
   );
 }

@@ -97,6 +97,11 @@
 `node tools/qa/full-check.mjs` は、確認の最後に作ったテスト用のアカウント（`qa-…@example.com`）・ガチャ（`qa-…`）・クーポン（メモ「QA」）を自動で削除する。
 手動で消す場合：`docker compose exec backend python -m app.cli cleanup-test-data`（本番では実行できない）
 
+デモ用ガチャの残り口数・テスト用ギフトコードが少なくなったら：`docker compose exec backend python -m app.cli restock-demo`
+（残りが 100 口未満のデモ用ガチャを満タンに戻し、ラストワン賞も再び出るようにする。確認スクリプト・E2E は開始時に自動で実行。本番では実行できない）
+
+**ギフトコードの再利用防止**：一度お渡ししたコードは、申請や会員が削除されても在庫に戻らない（`assigned_at` で判定）。
+
 ## お客さま向けのデモ用リンク
 
 - `./scripts/demo-link.sh`：サイトを起動し、Cloudflare の一時リンクを表示する。リンクが動いていればそのまま使い、PC の再起動などで止まっていれば新しく作る（アドレスが変わるので、お客さまに新しいリンクを送る）

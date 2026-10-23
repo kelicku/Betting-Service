@@ -116,8 +116,8 @@ async def upload_codes(item_id: int, body: CodesIn, admin: AdminUser, request: R
 async def code_summary(item_id: int, _: AdminUser, db: DB):
     """コードの中身は返さない（件数と有効期限のみ）。"""
     rows = (await db.execute(
-        select(GiftCode.expires_on, GiftCode.order_id.is_(None), func.count()).where(GiftCode.item_id == item_id)
-        .group_by(GiftCode.expires_on, GiftCode.order_id.is_(None))
+        select(GiftCode.expires_on, shop.code_is_available(), func.count()).where(GiftCode.item_id == item_id)
+        .group_by(GiftCode.expires_on, shop.code_is_available())
     )).all()
     return {"groups": [{"expires_on": e, "available": bool(a), "count": n} for e, a, n in rows]}
 
